@@ -65,6 +65,8 @@ Trim this to 45 seconds, blur any emails or API keys, add calm background music 
 
 ## What it can do
 
+An unofficial MCP for Screen Studio, not affiliated with its makers.
+
 1. **Record any Mac app.** Starts Screen Studio on a window, a display or an area, then operates the app with real clicks, typing, drags, scrolls and shortcuts while it records.
 2. **Record to a script's timing.** Voices the script first, holds each recorded beat for as long as its line runs and drops a marker where each beat starts.
 3. **Edit live in Screen Studio.** Cuts, splits, speed changes, zooms, layouts and masks play out step by step in the open editor, and Cmd+Z undoes any of them.
@@ -171,7 +173,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture
 
 ## License
 
-MIT. See [LICENSE](LICENSE). Not affiliated with Screen Studio.
+MIT. See [LICENSE](LICENSE).
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "screenstudio",
   "version": "0.5.0",
-  "description": "Record new videos and edit existing projects in Screen Studio.",
+  "description": "Unofficial Screen Studio MCP: record new videos and edit existing projects in Screen Studio.",
   "author": {
     "name": "Toli Marchuk",
     "url": "https://github.com/tolimarchuk"

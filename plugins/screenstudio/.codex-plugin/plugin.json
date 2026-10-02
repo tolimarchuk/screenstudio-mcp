@@ -1,7 +1,7 @@
 {
   "name": "screenstudio",
   "version": "0.5.0",
-  "description": "Record new videos and edit existing projects in Screen Studio.",
+  "description": "Unofficial Screen Studio MCP: record new videos and edit existing projects in Screen Studio.",
   "author": {
     "name": "Toli Marchuk",
     "url": "https://github.com/tolimarchuk"
@@ -9,25 +9,41 @@
   "homepage": "https://github.com/tolimarchuk/screenstudio-mcp#readme",
   "repository": "https://github.com/tolimarchuk/screenstudio-mcp",
   "license": "MIT",
-  "keywords": ["screen-studio", "video", "screen-recording", "video-editing", "mcp"],
+  "keywords": [
+    "screen-studio",
+    "video",
+    "screen-recording",
+    "video-editing",
+    "mcp"
+  ],
   "skills": "./skills/",
   "mcpServers": {
     "screenstudio": {
       "command": "npx",
-      "args": ["-y", "screenstudio-mcp@0.5.0", "serve"],
+      "args": [
+        "-y",
+        "screenstudio-mcp@0.5.0",
+        "serve"
+      ],
       "startup_timeout_sec": 60,
       "tool_timeout_sec": 1800
     }
   },
   "interface": {
     "displayName": "Screen Studio MCP",
-    "shortDescription": "Record and edit Screen Studio videos",
+    "shortDescription": "Unofficial: record and edit Screen Studio videos",
     "longDescription": "Records a new video by operating your app while Screen Studio records, or edits a video already in Screen Studio live in the open editor: cuts, speed, zooms, captions, narration, music, backgrounds and exports.",
     "developerName": "Toli Marchuk",
     "category": "Productivity",
-    "capabilities": ["Interactive", "Read", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
     "websiteURL": "https://github.com/tolimarchuk/screenstudio-mcp",
-    "defaultPrompt": ["Edit my latest Screen Studio recording"],
+    "defaultPrompt": [
+      "Edit my latest Screen Studio recording"
+    ],
     "brandColor": "#684CFF"
   }
 }

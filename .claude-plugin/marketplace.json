@@ -5,12 +5,12 @@
     "name": "Toli Marchuk",
     "url": "https://github.com/tolimarchuk"
   },
-  "description": "Record and edit Screen Studio videos from Claude Code.",
+  "description": "Unofficial Screen Studio MCP: record and edit Screen Studio videos from Claude Code.",
   "plugins": [
     {
       "name": "screenstudio",
       "source": "./plugins/screenstudio",
-      "description": "Record new videos and edit existing projects in Screen Studio."
+      "description": "Unofficial Screen Studio MCP server plus record, edit and export skills."
     }
   ]
 }
