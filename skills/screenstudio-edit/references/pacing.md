@@ -54,6 +54,7 @@ Screen Studio forces a spring faster when a zoom is shorter than its settle time
 | Before an action | 0.5–0.9s of stillness so the viewer sees where the cursor is going. |
 | After an action | 1.1–1.8s for the result, plus ~0.3s per new word of text to read. |
 | Final result | 2–3s hold. |
+| Zoom position | Manual, with a fixed target. Follow (Auto) only when the pointer itself is the subject. Moving to another spot is a new zoom back to back, not a re-aimed one. |
 | Cuts | About one per 10s for calm and balanced edits; snappy (social, launch) cuts on every beat, about one every 3–4s. Pauses shorter than ~1.2s stay in; a cut must earn its jump. |
 | Length | X teaser under 30s, X post under 45s, landing page 45–90s, docs 2–3 min. |
 

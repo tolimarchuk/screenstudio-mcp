@@ -381,12 +381,13 @@ export function checkPacing(
       z.presentation === "loupe" ? undefined : zooms.slice(i + 1).find((n) => n.z.presentation !== "loupe");
     if (next) {
       const gap = next.r!.startMs - r!.endMs;
-      if (gap < rules.zoomWideGapMs)
+      // Back to back (no wide shot at all) is a hand-off between two manual positions, not a ping-pong.
+      if (gap > 100 && gap < rules.zoomWideGapMs)
         issues.push(
           issue(
             gap < 1500 ? "error" : "warn",
             "zoom-ping-pong",
-            `Only ${secs(Math.max(0, gap))} of wide shot between zooms at ${secs(at)} and ${secs(next.r!.startMs)}. Merge them into one zoom (it pans between targets) or drop one.`,
+            `Only ${secs(Math.max(0, gap))} of wide shot between zooms at ${secs(at)} and ${secs(next.r!.startMs)}. Put them back to back (the second starts where the first ends), merge them into one manual zoom that frames both, or drop one.`,
             { atPlaybackMs: round(r!.endMs), zoomId: next.z.id },
           ),
         );

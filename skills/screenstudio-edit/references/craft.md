@@ -39,6 +39,8 @@ Camera look: face tracking on for cutout; `edgeFalloff01` 0.3–0.5 for a soft c
 ## Zoom and glass loupe
 
 - **Camera zoom** for something the viewer must read that is too small wide: a field being typed into, a chat thread, a value that changes. 1.4x for a region, 1.6–1.8x for one control. Frame the region, check the frame, and end before the screen changes.
+- **Zoom position is manual.** Give every zoom a fixed `target` on what matters (x, y 0–1 in the cropped frame). `follow: true` (Screen Studio's Auto) chases the pointer; use it only when the pointer itself is the subject: a drag, drawing, a long scroll. Clicking between things is two manual zooms back to back (the second starts where the first ends), never one zoom re-aimed or left to follow. A manual zoom holds one position; to move, add the next zoom.
+- **The camera shifts the framing.** Screen Studio puts a manual target at the middle of the area the camera does not cover, not at the frame center. With a cutout or overlay camera on the right, the target lands left of center and the view slides right; with the camera centered, it lands beside the camera. Aim at the subject and check the frame with `screenstudio_editor_frame`; if it must sit dead center, hide or move the camera for that stretch.
 - **Glass loupe** (`presentation: "loupe"`) for a block of text, a table, a list or a picker, where the viewer needs the detail and where it sits. 1.6–2x, radius 0.3–0.35, fixed target on the content, 4–6 seconds, while the voice names what is inside it. A loupe is a lens over a still frame, so it can sit closer to a camera zoom than two camera zooms can sit to each other. Two or three per video.
 - Alternate: wide, loupe, wide, zoom, wide. Never two of the same effect back to back.
 

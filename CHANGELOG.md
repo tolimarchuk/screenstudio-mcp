@@ -2,6 +2,13 @@
 
 New releases go at the top.
 
+## 0.5.3 (2026-10-02)
+
+- **Zooms are manual by default.** The planner gives every zoom one fixed position on what matters. Following the mouse is only for tracking the pointer itself, like a drag.
+- **Back-to-back zooms.** Moments too far apart for one frame become separate manual zooms that hand off with no wide shot between, instead of one zoom re-aimed or left to follow the mouse. The pacing check treats a back-to-back hand-off as fine and still flags a sliver of wide shot between two zooms.
+- **A manual zoom must say where it points.** `addZoom` without `target` (and without `follow`) is refused.
+- **Camera-aware framing, documented.** Screen Studio places a manual target at the middle of the area the camera leaves free, not the frame center; the edit skill and tool description say so and to check the frame.
+
 ## 0.5.2 (2026-10-02)
 
 - Scripts, captions and titles stay in the person's voice: the server instructions, narration tools and edit skill tell agents never to credit the agent or AI in a video.

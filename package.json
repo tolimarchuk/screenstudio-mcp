@@ -1,6 +1,6 @@
 {
   "name": "screenstudio-mcp",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "MCP server for Screen Studio: record new videos and edit existing Screen Studio projects from Claude Code, Codex or any MCP client.",
   "type": "module",
   "bin": {

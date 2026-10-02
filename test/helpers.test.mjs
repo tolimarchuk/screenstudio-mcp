@@ -61,7 +61,8 @@ test("ops are checked against the recording before anything is applied", () => {
   assert.deepEqual(mask.bounds, [{ x: 100, y: 100, width: 500, height: 250 }]);
   assert.deepEqual(config, { op: "config", partial: { cursor: { size: 56 } } });
   assert.throws(
-    () => prepareOps([{ op: "addZoom", startMs: 0, endMs: 20000, zoom: 1.5 }], scene),
+    () =>
+      prepareOps([{ op: "addZoom", startMs: 0, endMs: 20000, zoom: 1.5, target: { x: 0.5, y: 0.5 } }], scene),
     /inside the recording/,
   );
   assert.throws(

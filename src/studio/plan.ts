@@ -651,7 +651,9 @@ function frameGroup(
     sourceStartMs: clamp(startS),
     sourceEndMs: clamp(endS),
     zoom: level,
-    follow: part.length > 1 && (spanX > 0.04 || spanY > 0.04),
+    // Manual: one fixed position that frames every target. Following the mouse is only
+    // for tracking the pointer itself (a drag); clicks get a still, deliberate frame.
+    follow: part.some((p) => p.kind === "drag"),
     target: {
       x: Math.round(((Math.max(...xs) + Math.min(...xs)) / 2) * 1000) / 1000,
       y: Math.round(((Math.max(...ys) + Math.min(...ys)) / 2) * 1000) / 1000,
@@ -716,11 +718,32 @@ function resolveNeighbours(
         sourceStartMs: a1.sourceStartMs,
         sourceEndMs: b1.sourceEndMs,
         zoom: level,
-        follow: true,
+        follow: a1.follow || b1.follow,
         target: { x: (a1.target.x + b1.target.x) / 2, y: (a1.target.y + b1.target.y) / 2 },
         reason: `${a1.reason}; ${b1.reason}`,
         value: a1.value + b1.value,
       });
+    } else if (!pageBetween) {
+      // Too far apart for one frame: two manual zooms back to back, handing off where the
+      // first ends, rather than zooming out and straight back in or re-aiming one zoom.
+      // The first holds until the second begins, so neither gets shorter.
+      if (b1.sourceStartMs >= a1.sourceEndMs) {
+        a1.sourceEndMs = b1.sourceStartMs;
+        i++;
+        continue;
+      }
+      const handoff = Math.round((a1.sourceEndMs + b1.sourceStartMs) / 2);
+      const was = { a: a1.sourceEndMs, b: b1.sourceStartMs };
+      a1.sourceEndMs = handoff;
+      b1.sourceStartMs = handoff;
+      const tooShort = [a1, b1].some((z) => (visible(z)?.visibleMs ?? 0) < R.zoomMinMs);
+      if (!tooShort) {
+        i++;
+        continue;
+      }
+      a1.sourceEndMs = was.a;
+      b1.sourceStartMs = was.b;
+      zooms.splice(a1.value >= b1.value ? i + 1 : i, 1);
     } else zooms.splice(a1.value >= b1.value ? i + 1 : i, 1);
   }
 }
@@ -1344,7 +1367,7 @@ function directorNotes(x: {
     if (!r) continue;
     add(
       r.startMs,
-      `zoom ${z.zoom}x for ${secs(r.visibleMs)} on ${z.reason}${z.follow ? ", panning between the targets" : ""} (the deepest level that frames every target with a 12% margin; ${style} allows about ${R.zoomsPerMinute} a minute with ${secs(R.zoomWideGapMs)} of wide shot between).`,
+      `zoom ${z.zoom}x for ${secs(r.visibleMs)} on ${z.reason}${z.follow ? ", following the pointer" : ", at one manual position"} (the deepest level that frames every target with a 12% margin; ${style} allows about ${R.zoomsPerMinute} a minute with ${secs(R.zoomWideGapMs)} of wide shot between).`,
     );
   }
   if (options.zoom === "none") add(0, "no zooms, as asked.");

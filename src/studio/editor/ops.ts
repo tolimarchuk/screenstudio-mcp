@@ -67,7 +67,11 @@ export const editOp = z.discriminatedUnion("op", [
       loupe: loupe.optional(),
       instant: z.boolean().default(false),
     })
-    .strict(),
+    .strict()
+    .refine((o) => o.follow || o.target, {
+      message:
+        "A manual zoom needs a target (x, y 0-1 in the cropped frame). Use follow: true only to track the pointer.",
+    }),
   z
     .object({
       op: z.literal("updateZoom"),

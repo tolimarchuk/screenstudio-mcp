@@ -42,7 +42,7 @@ test("item updates are checked against the scene before anything runs", () => {
     () =>
       prepareOps(
         [
-          { op: "addZoom", startMs: 7000, endMs: 8000, zoom: 2 },
+          { op: "addZoom", startMs: 7000, endMs: 8000, zoom: 2, target: { x: 0.5, y: 0.5 } },
           { op: "updateZoom", zoomId: "B", endMs: 7500 },
         ],
         s,
