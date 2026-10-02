@@ -1,0 +1,15 @@
+# Screen Studio MCP Changelog
+
+New releases go at the top.
+
+## 0.5.0 (2026-10-02)
+
+First public release.
+
+- **Recording.** Operates your app with native input while Screen Studio records: clicks, typing, scrolling, drags, repeated taps and press-and-hold, paced like a person. Each beat records as one take with markers.
+- **Editing existing projects.** Edits any project already in Screen Studio in the open editor, in your own words: cuts and speed, zooms and the loupe, camera layouts, crop, backdrop, masks, cursor and captions. Changes use the app's own undo history and save after each apply.
+- **Edit planning.** Reads the footage (clicks, typing, scene changes, idle time, transcripts) and proposes an edit with styles (calm, balanced, snappy), beat scoring and fit-to-length. A pacing check explains every cut, speed-up and zoom. Seven recipes are available as optional presets.
+- **Narration, captions and music.** Narration pinned to moments in the recording so it survives re-cuts, captions from the transcript or the voice, and library music ducked under speech.
+- **Export.** Renders variants for X, Shorts, LinkedIn, landing pages and docs, plus seamless loops, contact sheets, brand kits and blur masks for keys and emails on screen.
+- **Install.** `npx screenstudio-mcp` sets up the server and skills for Claude Code and Codex and checks the Mac (Screen Studio build, ffmpeg, edge-tts, Accessibility, Screen Recording). `/plugin marketplace add tolimarchuk/screenstudio-mcp` installs the same as a Claude Code plugin.
+- Supports Screen Studio up to 4.0.1 (build 4897). Reading works on any 4.x; recording and editing on another build needs `SCREENSTUDIO_ALLOW_UNTESTED=1`.

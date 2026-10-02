@@ -1,0 +1,42 @@
+[
+  {
+    "activeModifiers": [],
+    "button": "left",
+    "processTimeMs": 2000,
+    "type": "mouseDown",
+    "x": 1101,
+    "y": 788
+  },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 2080, "type": "mouseUp", "x": 1101, "y": 788 },
+  {
+    "activeModifiers": [],
+    "button": "left",
+    "processTimeMs": 4000,
+    "type": "mouseDown",
+    "x": 1300,
+    "y": 1420
+  },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 4080, "type": "mouseUp", "x": 1300, "y": 1420 },
+  {
+    "activeModifiers": [],
+    "button": "left",
+    "processTimeMs": 5000,
+    "type": "mouseDown",
+    "x": 2005,
+    "y": 700
+  },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 5080, "type": "mouseUp", "x": 2005, "y": 700 },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 6000, "type": "mouseDown", "x": 300, "y": 500 },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 6400, "type": "mouseUp", "x": 700, "y": 500 },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 7000, "type": "mouseDown", "x": 800, "y": 400 },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 7500, "type": "mouseUp", "x": 2200, "y": 400 },
+  {
+    "activeModifiers": [],
+    "button": "left",
+    "processTimeMs": 17500,
+    "type": "mouseDown",
+    "x": 100,
+    "y": 100
+  },
+  { "activeModifiers": [], "button": "left", "processTimeMs": 17580, "type": "mouseUp", "x": 100, "y": 100 }
+]

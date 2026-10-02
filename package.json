@@ -1,0 +1,78 @@
+{
+  "name": "screenstudio-mcp",
+  "version": "0.5.0",
+  "description": "MCP server for Screen Studio: record new videos and edit existing Screen Studio projects from Claude Code, Codex or any MCP client.",
+  "type": "module",
+  "bin": {
+    "screenstudio-mcp": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "native/Desktop.swift",
+    "native/desktop-helper",
+    "skills/",
+    "docs/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc && chmod +x dist/cli/main.js dist/mcp/main.js",
+    "dev": "tsc --watch",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "build:native": "swiftc -O native/Desktop.swift -o native/desktop-helper -framework Cocoa -framework ApplicationServices -framework Vision",
+    "build:native:universal": "sh scripts/build-native-universal.sh",
+    "check": "npm run format:check && npm test",
+    "format:check": "prettier --check src test scripts/*.mjs",
+    "format": "prettier --write src test scripts/*.mjs",
+    "test:live": "npm run build && node scripts/live-record.mjs",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepublishOnly": "npm run check && npm run build:native:universal"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tolimarchuk/screenstudio-mcp.git"
+  },
+  "keywords": [
+    "screen-studio",
+    "screenstudio",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "claude-code",
+    "claude-code-plugin",
+    "codex",
+    "video-editing",
+    "screen-recording",
+    "product-demo",
+    "ai-agent",
+    "automation",
+    "macos"
+  ],
+  "author": "Toli Marchuk (https://github.com/tolimarchuk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tolimarchuk/screenstudio-mcp/issues"
+  },
+  "homepage": "https://github.com/tolimarchuk/screenstudio-mcp#readme",
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.2",
+    "prettier": "^3.9.9",
+    "typescript": "^5.7.0",
+    "ws": "^8.22.0"
+  }
+}

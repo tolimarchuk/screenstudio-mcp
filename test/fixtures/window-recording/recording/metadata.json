@@ -1,0 +1,35 @@
+{
+  "recorders": [
+    {
+      "id": "channel-0-input",
+      "type": "input",
+      "sessions": [
+        {
+          "durationMs": 20000,
+          "processTimeStartMs": 1000,
+          "keyStrokesFilename": "keystrokes-0.json",
+          "mouseClicksFilename": "mouseclicks-0.json",
+          "mouseMovesFilename": "mousemoves-0.json"
+        }
+      ]
+    },
+    {
+      "id": "channel-1-window",
+      "type": "window",
+      "sessions": [
+        {
+          "durationMs": 20000,
+          "processTimeStartMs": 1000,
+          "initialWindowBounds": {
+            "x": 560,
+            "y": 250,
+            "width": 1440,
+            "height": 900
+          },
+          "outputFilename": "channel-1-window-0.mp4",
+          "changesFilename": "channel-1-window-0-changes.json"
+        }
+      ]
+    }
+  ]
+}

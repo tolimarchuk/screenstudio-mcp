@@ -1,0 +1,58 @@
+[
+  { "activeModifiers": [], "character": "h", "isARepeat": false, "processTimeMs": 8000, "type": "keyDown" },
+  { "activeModifiers": [], "character": "h", "isARepeat": false, "processTimeMs": 8040, "type": "keyUp" },
+  { "activeModifiers": [], "character": "i", "isARepeat": false, "processTimeMs": 8100, "type": "keyDown" },
+  { "activeModifiers": [], "character": "i", "isARepeat": false, "processTimeMs": 8140, "type": "keyUp" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 8200, "type": "keyDown" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 8240, "type": "keyUp" },
+  { "activeModifiers": [], "character": "o", "isARepeat": false, "processTimeMs": 8300, "type": "keyDown" },
+  { "activeModifiers": [], "character": "o", "isARepeat": false, "processTimeMs": 8340, "type": "keyUp" },
+  { "activeModifiers": [], "character": "o", "isARepeat": true, "processTimeMs": 8400, "type": "keyDown" },
+  { "activeModifiers": [], "character": "o", "isARepeat": true, "processTimeMs": 8500, "type": "keyDown" },
+  { "activeModifiers": [], "character": "o", "isARepeat": true, "processTimeMs": 8600, "type": "keyDown" },
+  {
+    "activeModifiers": ["command"],
+    "character": "",
+    "isARepeat": false,
+    "processTimeMs": 9000,
+    "type": "keyDown"
+  },
+  {
+    "activeModifiers": ["command"],
+    "character": "",
+    "isARepeat": false,
+    "processTimeMs": 9040,
+    "type": "keyUp"
+  },
+  {
+    "activeModifiers": ["command"],
+    "character": "",
+    "isARepeat": true,
+    "processTimeMs": 9050,
+    "type": "keyDown"
+  },
+  {
+    "activeModifiers": [],
+    "character": "\u001b",
+    "isARepeat": false,
+    "processTimeMs": 14000,
+    "type": "keyDown"
+  },
+  {
+    "activeModifiers": [],
+    "character": "\u001b",
+    "isARepeat": false,
+    "processTimeMs": 14040,
+    "type": "keyUp"
+  },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 14500, "type": "keyDown" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 14540, "type": "keyUp" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 15000, "type": "keyDown" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 15040, "type": "keyUp" },
+  { "activeModifiers": [], "character": "", "isARepeat": true, "processTimeMs": 15100, "type": "keyDown" },
+  { "activeModifiers": [], "character": "", "isARepeat": true, "processTimeMs": 15200, "type": "keyDown" },
+  { "activeModifiers": [], "character": "\r", "isARepeat": false, "processTimeMs": 16000, "type": "keyDown" },
+  { "activeModifiers": [], "character": "\r", "isARepeat": false, "processTimeMs": 16040, "type": "keyUp" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 16500, "type": "keyDown" },
+  { "activeModifiers": [], "character": "", "isARepeat": false, "processTimeMs": 16540, "type": "keyUp" }
+]

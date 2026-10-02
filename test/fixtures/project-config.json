@@ -1,0 +1,180 @@
+{
+  "crop": {
+    "rect01": {
+      "x": 0,
+      "y": 0,
+      "width": 1,
+      "height": 1
+    }
+  },
+  "cursor": {
+    "hide": false,
+    "size": 48,
+    "stopMovementInLastPartMs": 800,
+    "set": {
+      "id": "macos-tahoe",
+      "variants": {}
+    },
+    "rotationMode": "velocity",
+    "rotateOnXMovementRatio": 0.5,
+    "baseRotation": 0,
+    "useDefaultIfAppHasLowResolution": true,
+    "alwaysUseDefault": false,
+    "hideNotMovingAfterMs": 1500,
+    "loopPositionBeforeEndMs": null,
+    "removeShakeTreshold": 500,
+    "optimizeOriginalTypes": true,
+    "clickEffect": null
+  },
+  "captions": {
+    "enableTranscript": true,
+    "showSoundLabels": false,
+    "enableShortcuts": false,
+    "hiddenShortcuts": {},
+    "showShortcutsWithSingleLetters": false,
+    "shortcutsSizeRatio": 0.1,
+    "font": "sans-serif",
+    "sizeRatio": 0.05,
+    "color": "#ffffff",
+    "backgroundColor": "#000000",
+    "position01": {
+      "x": 0.5,
+      "y": 1
+    },
+    "wordsReveal": "line-by-line",
+    "lineGrowth": "left-anchored",
+    "wordEntrance": "appear"
+  },
+  "audio": {
+    "volume": 1,
+    "muteMicrophone": false,
+    "microphoneAudioPreset": "voice",
+    "muteSystemAudio": false,
+    "backgroundAudioVolume": 0.05,
+    "backgroundAudioFileName": null,
+    "muteBackgroundAudio": false,
+    "muteExternalDeviceAudio": false,
+    "clickSoundEffect": null,
+    "clickSoundEffectVolume": 0.25
+  },
+  "camera": {
+    "hide": false,
+    "mirror": false,
+    "aspectRatio": 1,
+    "enableFaceTracking": false,
+    "hideDuringSilenceMs": null,
+    "lut": null,
+    "lutIntensity": 1,
+    "grain": 0,
+    "sharpen01": 0,
+    "background": {
+      "blurAmount01": 0,
+      "edgeFalloff01": 0.2
+    }
+  },
+  "animations": {
+    "mouseMovementSpring": {
+      "stiffness": 470,
+      "damping": 70,
+      "mass": 3,
+      "clamp": true,
+      "precision": 0.002
+    },
+    "screenMovementSpring": {
+      "stiffness": 170,
+      "damping": 50,
+      "mass": 3,
+      "clamp": true,
+      "precision": 0.002
+    },
+    "motionBlurAmount": 1
+  },
+  "processing": {
+    "improveRecordingQuality01": 0.5
+  },
+  "zooms": {
+    "startAnimationEarly": false
+  },
+  "defaultLayout": {
+    "type": "camera-overlay",
+    "cameraOverlay": {
+      "overlayCameraPosition01": {
+        "x": 1,
+        "y": 1
+      },
+      "overlayCameraSizeRatio01": 0.5,
+      "overlayCameraPaddingRatio01": 0.5,
+      "overlayCameraAspectRatio": 1,
+      "overlayZoomedCameraScale": 0.8
+    },
+    "splitScreen": {
+      "splitDirection": "auto",
+      "splitFlip": false,
+      "splitScreenRatio01": null,
+      "enablePadding": false
+    },
+    "cutoutCamera": {
+      "cutoutCameraPositionX01": 1,
+      "cutoutCameraSizeRatio01": 0.5,
+      "cutoutCameraZoomedScale": 0.8,
+      "cutoutCameraAspectRatio": null
+    }
+  },
+  "device": {
+    "enableMockup": true,
+    "frameKey": null
+  },
+  "output": {
+    "aspectRatio": "auto",
+    "paddingRatio01": 0.1,
+    "avoidEmptyZoomArea": true
+  },
+  "styles": {
+    "screenBorderRadius": 16,
+    "cameraBorderRadiusRatio01": 0.15,
+    "screenInset": {
+      "size": 0,
+      "origin01": {
+        "x": 0,
+        "y": 0
+      },
+      "alpha": 0.5,
+      "color": "#000000"
+    },
+    "shadow": {
+      "intensity": 0.3,
+      "distance": 25,
+      "angle": 45,
+      "blur": 20,
+      "isDirectional": true
+    },
+    "background": {
+      "type": "system",
+      "color": "#4776e6",
+      "gradient": {
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 1,
+          "y": 1
+        },
+        "stops": [
+          {
+            "color": "#4776e6",
+            "at": 0
+          },
+          {
+            "color": "#8e54e9",
+            "at": 1
+          }
+        ]
+      },
+      "systemName": "macOS/san-francisco-dark.jpg",
+      "image": null,
+      "unsplash": null,
+      "blur": 0
+    }
+  }
+}
