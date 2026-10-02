@@ -3,17 +3,28 @@
   "version": "0.5.0",
   "description": "Record new videos and edit existing projects in Screen Studio.",
   "author": {
-    "name": "tolimarchuk",
+    "name": "Toli Marchuk",
     "url": "https://github.com/tolimarchuk"
   },
   "homepage": "https://github.com/tolimarchuk/screenstudio-mcp#readme",
   "repository": "https://github.com/tolimarchuk/screenstudio-mcp",
   "license": "MIT",
-  "keywords": ["screen-studio", "video", "screen-recording", "video-editing", "mcp", "claude-code-plugin"],
+  "keywords": [
+    "screen-studio",
+    "video",
+    "screen-recording",
+    "video-editing",
+    "mcp",
+    "claude-code-plugin"
+  ],
   "mcpServers": {
     "screenstudio": {
       "command": "npx",
-      "args": ["-y", "screenstudio-mcp@0.5.0", "serve"]
+      "args": [
+        "-y",
+        "screenstudio-mcp@0.5.0",
+        "serve"
+      ]
     }
   }
 }

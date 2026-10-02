@@ -1,6 +1,7 @@
 node_modules/
 dist/
-.agents/
+.agents/*
+!.agents/plugins/
 .claude/
 .artifacts/
 *.screenstudio/
@@ -11,4 +12,3 @@ dist/
 
 native/desktop-helper
 !assets/*.gif
-!assets/*.mp4

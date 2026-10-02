@@ -15,7 +15,8 @@ Every edit follows the person's own direction. Recipes are optional presets, nev
 - `src/cli/main.ts` is the `screenstudio-mcp` command: install, doctor, update, uninstall, serve.
 - `native/Desktop.swift` is the native input helper (clicks, typing, taps, holds, OCR). The npm package ships it prebuilt and universal.
 - `skills/` holds the record, edit and deliver skills. The installer copies them into Claude Code and Codex; the MCP server also serves their references as resources.
-- `.claude-plugin/` makes the repo a Claude Code plugin marketplace.
+- `plugins/screenstudio/` is the plugin Claude Code and Codex install: both manifests plus a mirror of `skills/`. Never edit the mirror; run `npm run sync:plugin` after changing `skills/` (`npm run check` fails when it is stale).
+- `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json` make the repo a plugin marketplace for Claude Code and Codex.
 
 ## Rules
 
@@ -27,4 +28,4 @@ Every edit follows the person's own direction. Recipes are optional presets, nev
 
 ## Release
 
-- Bump `version` in `package.json` and `.claude-plugin/plugin.json`, add a CHANGELOG entry, and publish a GitHub release tagged `v<version>`. The publish workflow builds the universal helper on macOS and publishes to npm with provenance.
+- Bump `version` in `package.json` and both plugin manifests (including the pinned `screenstudio-mcp@<version>` they start), add a CHANGELOG entry, and publish a GitHub release tagged `v<version>`. The publish workflow builds the universal helper on macOS and publishes to npm with provenance.

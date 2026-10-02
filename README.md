@@ -3,7 +3,7 @@
 <p align="center">
   <img src="assets/screenstudio-mcp.gif" width="100%" alt="Screen Studio MCP cutting a recording's timeline, switching the background to a gradient, adding zooms and playing the result, live in Screen Studio's editor.">
   <br>
-  <a href="assets/screenstudio-mcp.mp4">Watch as MP4</a>
+  <sub><b>Real-time editing.</b> It'll get things done in less than 20 seconds.</sub>
 </p>
 
 <p align="center">Record and edit Screen Studio videos from Claude Code, Codex or any MCP client.</p>
@@ -27,13 +27,22 @@ You direct every edit in your own words. Presets are optional starting points.
 npx screenstudio-mcp
 ```
 
-This installs the server and the record, edit and deliver skills into Claude Code, and into Codex if you have it, then checks your Mac. Restart your agent and ask for a video.
+This installs the server and the record, edit and deliver skills into Claude Code and Codex, then checks your Mac. Restart your agent and ask for a video.
 
-In Claude Code you can install it as a plugin instead:
+Or install it as a plugin.
+
+Claude Code:
 
 ```text
 /plugin marketplace add tolimarchuk/screenstudio-mcp
 /plugin install screenstudio@screenstudio-mcp
+```
+
+Codex:
+
+```bash
+codex plugin marketplace add tolimarchuk/screenstudio-mcp
+codex plugin add screenstudio@screenstudio-mcp
 ```
 
 ## Record a video
@@ -144,8 +153,30 @@ npm run check
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [docs/architecture.md](docs/architecture.md), [docs/compatibility.md](docs/compatibility.md) and the [changelog](CHANGELOG.md).
 
+## Also by Toli
+
+<table>
+  <tr>
+    <td width="45%">
+      <a href="https://github.com/tolimarchuk/goalbuddy"><img src="https://raw.githubusercontent.com/tolimarchuk/goalbuddy/main/internal/assets/goalbuddy-readme-hero.png" alt="GoalBuddy" width="100%"></a>
+    </td>
+    <td>
+      <a href="https://github.com/tolimarchuk/goalbuddy"><b>GoalBuddy</b></a><br>
+      A better <code>/goal</code> for Codex and Claude Code: a finish line, a live board and proof for long agent runs.<br><br>
+      <a href="https://github.com/tolimarchuk/goalbuddy"><img alt="GoalBuddy stars" src="https://img.shields.io/github/stars/tolimarchuk/goalbuddy?style=flat-square&color=684cff&label=stars"></a>
+      <code>npx goalbuddy</code>
+    </td>
+  </tr>
+</table>
+
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). Not affiliated with Screen Studio.
 
-Not affiliated with Screen Studio.
+---
+
+<p align="center">
+  Built by <a href="https://x.com/tolibear_">Toli Marchuk</a> at <a href="https://heysigna.com">heysigna.com</a>.<br>
+  Want something like this built for your team? <a href="https://heysigna.com">Work with me at Signa</a>.<br><br>
+  <a href="https://x.com/tolibear_"><img alt="Follow @tolibear_ on X" src="https://img.shields.io/badge/follow-%40tolibear__-000000?style=flat-square&logo=x"></a>
+</p>

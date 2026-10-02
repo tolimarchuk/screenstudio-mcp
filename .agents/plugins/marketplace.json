@@ -1,0 +1,20 @@
+{
+  "name": "screenstudio-mcp",
+  "interface": {
+    "displayName": "Screen Studio MCP"
+  },
+  "plugins": [
+    {
+      "name": "screenstudio",
+      "source": {
+        "source": "local",
+        "path": "./plugins/screenstudio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

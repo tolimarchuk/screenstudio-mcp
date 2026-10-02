@@ -22,12 +22,13 @@
     "test": "npm run build && node --test test/*.test.mjs",
     "build:native": "swiftc -O native/Desktop.swift -o native/desktop-helper -framework Cocoa -framework ApplicationServices -framework Vision",
     "build:native:universal": "sh scripts/build-native-universal.sh",
-    "check": "npm run format:check && npm test",
+    "check": "npm run format:check && node scripts/sync-plugin.mjs --check && npm test",
     "format:check": "prettier --check src test scripts/*.mjs",
     "format": "prettier --write src test scripts/*.mjs",
     "test:live": "npm run build && node scripts/live-record.mjs",
     "pack:dry-run": "npm pack --dry-run",
-    "prepublishOnly": "npm run check && npm run build:native:universal"
+    "prepublishOnly": "npm run check && npm run build:native:universal",
+    "sync:plugin": "node scripts/sync-plugin.mjs"
   },
   "repository": {
     "type": "git",
