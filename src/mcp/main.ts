@@ -39,7 +39,9 @@ const server = new McpServer(
 );
 
 const ctx = new Context();
-pruneState(ctx.studio.stateDir).catch(() => {});
+pruneState(ctx.studio.stateDir)
+  .then(() => ctx.studio.deliverPending())
+  .catch(() => {});
 for (const tools of [
   app,
   recording,

@@ -2,6 +2,11 @@
 
 New releases go at the top.
 
+## 0.5.1 (2026-10-02)
+
+- `screenstudio_export_start` waits for the render and returns the delivered file, so an agent can't end its turn with the video still undelivered. `wait: false` keeps the old poll-based flow.
+- On startup the server delivers any export that finished after the session that started it ended.
+
 ## 0.5.0 (2026-10-02)
 
 First public release.

@@ -565,11 +565,15 @@ export class Studio {
    * Polls a job until it stops running (completed, failed, cancelled or delivery_failed).
    * Each poll takes the lock on its own, so recording and other exports are never held up.
    */
-  async waitForExport(jobId: string, o: { pollMs?: number; timeoutMs?: number; signal?: AbortSignal } = {}) {
+  async waitForExport(
+    jobId: string,
+    o: { pollMs?: number; timeoutMs?: number; signal?: AbortSignal; onPoll?: () => void } = {},
+  ) {
     const pollMs = o.pollMs ?? 1000;
     const until = Date.now() + (o.timeoutMs ?? 20 * 60000);
     for (;;) {
       if (o.signal?.aborted) throw new Error(`Export ${jobId} was cancelled.`);
+      o.onPoll?.();
       const status = await this.exportStatus(jobId);
       if (!RUNNING.includes(status.status)) return status;
       if (Date.now() >= until)
@@ -577,6 +581,19 @@ export class Studio {
           `Export ${jobId} is still ${status.status} after ${Math.round((o.timeoutMs ?? 20 * 60000) / 1000)}s. Poll screenstudio_export_status with this job.`,
         );
       await new Promise((r) => setTimeout(r, pollMs));
+    }
+  }
+  /**
+   * Delivers exports that finished after the call that started them ended (an
+   * agent that stopped before its render was done). Runs once at startup.
+   */
+  async deliverPending() {
+    if (!(await this.isRunning())) return;
+    for (const name of await readdir(this.stateDir).catch(() => [] as string[])) {
+      const m = /^export-([0-9a-f-]{36})\.json$/.exec(name);
+      if (!m) continue;
+      const saved = JSON.parse(await readFile(join(this.stateDir, name), "utf8").catch(() => "{}"));
+      if (!saved.completed) await this.exportStatus(m[1]).catch(() => {});
     }
   }
   async exportStatus(jobId: string) {

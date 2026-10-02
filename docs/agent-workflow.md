@@ -52,7 +52,7 @@ Slices and zooms use source time; the editor state, pacing report and frames use
 
 ## Deliver
 
-`screenstudio_export_start` renders what the editor shows. Poll the job, then check frames at the opening, each zoom, each cut and the end with `screenstudio_export_frame`.
+`screenstudio_export_start` renders what the editor shows and waits for the file. Then check frames at the opening, each zoom, each cut and the end with `screenstudio_export_frame`.
 
 ## Recovery
 

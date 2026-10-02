@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { Context } from "../context.js";
-import { READ, WRITE, image, path, toolsOn } from "../tool.js";
+import { READ, WRITE, image, path, progressOf, toolsOn } from "../tool.js";
 import { exportFrame } from "../../studio/deliver.js";
 
 export function register(server: McpServer, ctx: Context) {
@@ -10,7 +10,7 @@ export function register(server: McpServer, ctx: Context) {
 
   tool(
     "screenstudio_export_start",
-    "Render what the editor shows (including unsaved edits) to a local MP4 or GIF without a save dialog. height is the frame's short side, like every target and recipe: 1080 renders 1920x1080 at 16:9, 1080x1920 at 9:16 and 1080x1350 at 4:5 (a portrait frame asks Screen Studio for its full height). Returns a job; poll status. Results say whether the render came from the live editor or the saved project (source live/disk). Existing files are never overwritten: a taken or unwritable output ends with status delivery_failed and the renderedPath. keepRender keeps the app's temporary QA copy.",
+    "Render what the editor shows (including unsaved edits) to a local MP4 or GIF without a save dialog. height is the frame's short side, like every target and recipe: 1080 renders 1920x1080 at 16:9, 1080x1920 at 9:16 and 1080x1350 at 4:5 (a portrait frame asks Screen Studio for its full height). Waits for the render and returns the delivered file (wait:false returns the job right away to poll with screenstudio_export_status). Results say whether the render came from the live editor or the saved project (source live/disk). Existing files are never overwritten: a taken or unwritable output ends with status delivery_failed and the renderedPath. keepRender keeps the app's temporary QA copy.",
     {
       projectPath: path,
       outputPath: path,
@@ -25,9 +25,10 @@ export function register(server: McpServer, ctx: Context) {
       format: z.enum(["mp4", "gif"]).default("mp4"),
       quality: z.enum(["studio"]).default("studio"),
       keepRender: z.boolean().default(false),
+      wait: z.boolean().default(true),
     },
     WRITE,
-    async (a) => {
+    async (a, extra) => {
       // Screen Studio reads its export height as the frame's real height, so a portrait frame asks for its long side.
       const t = await ctx.timeline(a.projectPath);
       const { height, frame, note } = await exportFrame(
@@ -36,9 +37,19 @@ export function register(server: McpServer, ctx: Context) {
         a.height,
         ctx.cachedAnalysis(t.projectPath)?.capture,
       );
-      const job = await studio.exportStart(a.projectPath, a.outputPath, { ...a, height }, (p) =>
+      const started = await studio.exportStart(a.projectPath, a.outputPath, { ...a, height }, (p) =>
         editor.liveProject(p),
       );
+      // Waiting here means an agent never ends its turn with the file still undelivered.
+      const progress = progressOf(extra);
+      let n = 0;
+      const job = a.wait
+        ? await studio.waitForExport(started.jobId, {
+            timeoutMs: 30 * 60000,
+            signal: extra.signal,
+            onPoll: () => progress(++n, 0, "Rendering in Screen Studio"),
+          })
+        : started;
       return note ? { ...job, ...(frame ? { frame } : {}), note } : job;
     },
   );
