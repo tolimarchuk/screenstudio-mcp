@@ -8,6 +8,7 @@ A narrated demo is planned around the voice. Write the script first and time eac
 - Say what the viewer is looking at as they look at it. Name the thing on screen ("Three plans, billed monthly"), then what it does for them.
 - Lead with what the product is in the first line. End with what to do next.
 - Plain, confident, specific. No hype words, no rhetorical questions stacked up, no "seamlessly".
+- The video is the person's. Never credit the agent, the AI or the model ("recorded, cut and captioned by Claude", "made with AI") in a line, caption or end card. Credit them or their product, unless they ask otherwise.
 - Spell out what a voice would misread: prices ("twenty-nine dollars"), domains ("acme dot com"), acronyms.
 - If a beat has a silent stretch with action in it (a scroll, a click, a panel opening), extend the line to cover it rather than leaving dead air.
 

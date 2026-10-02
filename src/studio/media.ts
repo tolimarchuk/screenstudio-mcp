@@ -133,10 +133,16 @@ export function cropPng(
   input: string,
   out: string,
   rect: { x: number; y: number; width: number; height: number },
+  /** Scales down to at most this width, so a large window does not make a multi-megabyte frame. */
+  maxWidth = 1600,
 ) {
-  return ffmpeg(["-y", "-i", input, "-vf", `crop=${rect.width}:${rect.height}:${rect.x}:${rect.y}`, out], {
-    timeoutMs: 15000,
-  });
+  const scale = rect.width > maxWidth ? `,scale=${maxWidth}:-2:flags=lanczos` : "";
+  return ffmpeg(
+    ["-y", "-i", input, "-vf", `crop=${rect.width}:${rect.height}:${rect.x}:${rect.y}${scale}`, out],
+    {
+      timeoutMs: 15000,
+    },
+  );
 }
 
 /** Screenshots one native window, without its shadow. */

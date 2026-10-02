@@ -34,6 +34,7 @@ const server = new McpServer(
       "screenstudio_recipes lists optional presets that set a whole direction in one word (none is applied unless named); a saved brand kit (screenstudio_brand) goes on top. Read each plan's notes: they say why every cut, speed-up and zoom is there.",
       "Render and inspect frames before calling a video finished: screenstudio_contact_sheet shows the key moments in one grid, screenstudio_export_variants renders every destination with a delivery kit.",
       "Before publishing, run screenstudio_find_sensitive to blur keys, emails and other private text on screen.",
+      'Write scripts, captions and titles in the person\'s voice about their product. Never credit the agent, the AI or the model in the video (no "made by Claude/AI" lines or end cards) unless the person asks.',
     ].join(" "),
   },
 );

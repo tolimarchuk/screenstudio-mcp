@@ -2,6 +2,11 @@
 
 New releases go at the top.
 
+## 0.5.2 (2026-10-02)
+
+- Scripts, captions and titles stay in the person's voice: the server instructions, narration tools and edit skill tell agents never to credit the agent or AI in a video.
+- Editor preview frames are scaled to at most 1600 pixels wide, so a large editor window no longer produces frames too big to return.
+
 ## 0.5.1 (2026-10-02)
 
 - `screenstudio_export_start` waits for the render and returns the delivered file, so an agent can't end its turn with the video still undelivered. `wait: false` keeps the old poll-based flow.
