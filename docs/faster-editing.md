@@ -36,6 +36,25 @@ The old animated path adds 45% of the step interval for each config field and 60
 
 Suggest: ship the current-window and direct-application changes first, because they remove unnecessary work and prevent the mistakes that caused repeated corrections.
 
+## Live comparison, October 3
+
+Compared the installed 0.5.3 handlers with this checkout's handlers in the same open editor. Both used their schema defaults, the same nine-setting batch and the same preview check. Eight settings-read pairs and three edit pairs alternated order to reduce warm-app bias. The editor was brought forward for the final run.
+
+| Stage | Installed median | New median | Improvement |
+| --- | ---: | ---: | ---: |
+| Read timeline and settings | 169 ms | 83 ms | 2.0× |
+| Apply nine settings and check pacing | 2,339 ms | 392 ms | 6.0× |
+| Capture and check a preview | 1,750 ms | 1,795 ms | Similar |
+| Apply and capture together | 4,089 ms | 2,182 ms | 1.9×, 47% less time |
+
+Edit times ranged from 2,330–2,345 ms installed and 387–402 ms new. Both paths retained the pacing check. Every trial compared the complete resulting settings and timeline against the expected edit, including unchanged camera size, crop, cuts, zooms and layouts. Preview inspection showed the changed background and the essential controls with the existing shoulder crop. Original settings and playhead were restored and saved after the test. No project copy was created.
+
+These measurements cover a settings correction in a warm, connected app. They exclude agent decision time, footage analysis, caption generation, file saving and export. The settings comparison starts with a known project path; it does not time window discovery. The new default removes sidebar animation delays, so most of the gain comes from applying the same batch directly. The installed version can also use direct application when requested.
+
+An initial run while the editor was behind another window returned unchanged preview pixels despite correct live settings. Bringing the editor forward made the changed background appear. This confirms that generation and playhead checks alone cannot establish preview freshness. The repeatable comparison now checks that a color-background edit actually changes the captured image. A renderer completion signal remains the next quality improvement.
+
+The repeatable comparison is `scripts/compare-edit-latency.mjs`. Pass an installed package directory as its first argument; it measures settings reads by default. Add `--edit` to temporarily apply and restore styling and capture both results. Keep the editor visible and paused. Screen content and project names stay outside the report.
+
 ## Further work, in priority order
 
 1. **Make preview readiness come from the renderer.** A fixed 700 ms wait cannot prove that the screen, camera and captions have finished drawing, even if the playhead is correct. Hidden editor windows stop their animation callbacks, so waiting on those callbacks broke real capture during investigation and was removed. Add a rendering completion signal, compare preview frames with exported frames, and test unchanged-time previews after config changes. This is the highest remaining quality issue.
