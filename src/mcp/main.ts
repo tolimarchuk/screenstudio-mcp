@@ -24,17 +24,12 @@ const server = new McpServer(
   { name: "screenstudio-mcp", version },
   {
     instructions: [
-      "Screen Studio MCP does two jobs in the real Screen Studio app: record a new video (operate the person's app with real input while Screen Studio records), and edit a video that is already in Screen Studio (live in the open editor).",
-      "Follow the person's own direction for every edit; anything Screen Studio can do is fair to change.",
-      "Edit in the open editor window: screenstudio_editor_open, then screenstudio_editor_apply. Changes appear live for the person watching and use the app's undo history. Never quit the app or rewrite project files to edit.",
-      "Let the footage decide the edit: screenstudio_analyze reads clicks, typing and screen changes; screenstudio_plan_edit proposes calm cuts, speed-ups only for typing and waiting, and few long zooms; screenstudio_check_pacing flags anything too fast.",
-      "Look before you commit: screenstudio_source_frames shows raw moments, screenstudio_editor_frame shows the edited preview at any playback time.",
-      "Record with screenstudio_desktop_perform so each beat is one natural take with holds between steps.",
-      "Read the craft resource (zoom, loupe, cursor, clicks, springs, frame, music, narration) before editing, and the narration resource before voicing a video.",
-      "screenstudio_recipes lists optional presets that set a whole direction in one word (none is applied unless named); a saved brand kit (screenstudio_brand) goes on top. Read each plan's notes: they say why every cut, speed-up and zoom is there.",
-      "Render and inspect frames before calling a video finished: screenstudio_contact_sheet shows the key moments in one grid, screenstudio_export_variants renders every destination with a delivery kit.",
-      "Before publishing, run screenstudio_find_sensitive to blur keys, emails and other private text on screen.",
-      'Write scripts, captions and titles in the person\'s voice about their product. Never credit the agent, the AI or the model in the video (no "made by Claude/AI" lines or end cards) unless the person asks.',
+      "Record and edit in the real Screen Studio app. Follow the person's direction; recipes are optional.",
+      "Start edits with screenstudio_edit_context and use the current window. Copy only when asked; open only when the requested project is not open. Preserve manual adjustments and refresh state after they change. Apply directly by default; show:true demonstrates each step. Use undo/checkpoints, never quit the app or rewrite project files to edit.",
+      "Read craft and pacing before styling; narration before adding a voice. Analyze speech and actions, inspect source frames, plan the edit, apply one batch, then inspect the affected previews. Never speed up speech or clicks the viewer needs to follow.",
+      "Record with screenstudio_desktop_perform and holds between beats. Resources and skills contain the full recording, editing and delivery workflow.",
+      "Before finishing, render and inspect the delivered key frames, captions, controls and pacing; listen to the audio. Before publishing, scan and blur private text.",
+      "Write in the person's voice about their product. No agent, AI or model credits unless asked.",
     ].join(" "),
   },
 );

@@ -6,7 +6,7 @@ Timing rules live in [pacing](pacing.md) (`screenstudio://pacing`), voice-over i
 
 ## Start clean
 
-When asked to start from scratch, clear the timeline tracks (`clearTrack` layouts and masks, `clearZooms`) and set every setting you rely on explicitly in one `config` op, rather than inheriting whatever the project had. Edit a duplicate so the original stays intact.
+When asked to start from scratch, clear the timeline tracks (`clearTrack` layouts and masks, `clearZooms`) and set every setting you rely on explicitly in one `config` op, rather than inheriting whatever the project had. Use the current editor and its undo history. Create a duplicate only when the person asks.
 
 ## Frame: crop, aspect, padding, backdrop
 
@@ -34,6 +34,8 @@ Five layouts. The default (`defaultLayout.type`) can be `cutout-camera`, `camera
 
 Put the person on the side away from the content they are showing. Change layout on a sentence boundary, never mid-word, and at most every 5–10 seconds.
 
+Treat camera size as a starting range, not a guarantee about the rendered subject: source framing and crop change its apparent size. Increase gradually and inspect a frame before trying a larger size. Preserve the person's approved size and shoulder crop. `camera.crop01` crops the camera recording separately from `crop.rect01`, which crops the screen.
+
 Camera look: face tracking on for cutout; `edgeFalloff01` 0.3–0.5 for a soft cutout edge; a LUT at 0.3–0.5 intensity rather than full; light sharpen (0.1–0.2) and grain (≤ 0.05); background blur for the fullscreen and overlay layouts when the room is busy.
 
 ## Zoom and glass loupe
@@ -56,6 +58,8 @@ Captions come from the transcript (`screenstudio_transcript_generate`, on-device
 - **Reveal:** `line-by-line` with `wordEntrance: fade-in` keeps the whole line on screen; use it for readable captions. Screen Studio's own `word-by-word` shows only one word at a time in this build: punchy for a short social hook, hard to read for anything longer.
 - **Size** 0.04–0.05 of the frame height for desktop, 0.055–0.065 for phone-first.
 - **Position** bottom centre (`position01` y 0.92–0.94) by default; move up or to the side if the camera or key UI sits there.
+Check caption placement in both the wide shot and the zoom. A bottom caption can cover a call button after the screen is magnified. Move it into clear space and inspect the exported frame.
+
 - **Background** black at about 70% (`#000000b3`), white text, sans-serif.
 - **Keyboard shortcuts** (`enableShortcuts`) show keycaps when the recording used shortcuts; turn them on for tutorials.
 

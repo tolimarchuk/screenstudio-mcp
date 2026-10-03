@@ -41,6 +41,15 @@ const config = () => ({
   },
 });
 
+test("camera crop can be initialized when the optional field is absent", () => {
+  const c = { camera: { hide: false } };
+  const crop = { x: 0.23, y: 0, width: 0.56, height: 1 };
+  assert.deepEqual(validateConfigChange(c, "camera.crop01", crop), crop);
+  assert.deepEqual(configPartial(c, { "camera.crop01": crop }), { camera: { crop01: crop } });
+  assert.throws(() => validateConfigChange(c, "camera.crop01", { ...crop, width: 2 }));
+  assert.throws(() => validateConfigChange(c, "camera.unknown", true), /Unknown config field/);
+});
+
 test("a whole config group is refused instead of landing under an undefined field", () => {
   assert.throws(
     () => validateConfigChange(config(), "styles", { screenBorderRadius: 10 }),

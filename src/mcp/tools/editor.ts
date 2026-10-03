@@ -12,6 +12,30 @@ export function register(server: McpServer, ctx: Context) {
   const { editor } = ctx;
   const tool = toolsOn(server);
 
+  tool(
+    "screenstudio_edit_context",
+    "Start editing here: use the focused Screen Studio editor (or the only open editor), without opening or duplicating a project. Returns its live timeline, all settings and editGeneration, plus recording analysis with speech, pauses and actions. If needsTranscript is true and captions or speech cuts are requested, generate the transcript before planning. Pass analyze:false for a quick settings-only adjustment. Re-read after the person changes the edit; pass editGeneration as expectedGeneration to editor_apply.",
+    { projectPath: path.optional(), analyze: z.boolean().default(true) },
+    READ,
+    async (a) => {
+      const projectPath = await editor.current(a.projectPath);
+      const [state, analysis] = await Promise.all([
+        editor.raw(projectPath),
+        a.analyze ? ctx.analysisFor(projectPath) : Promise.resolve(undefined),
+      ]);
+      return {
+        ...state,
+        scenes: state.scenes.map((s: any) => ({ id: s.id, name: s.name, ...describeScene(s) })),
+        ...(analysis
+          ? {
+              needsTranscript: !!analysis.hasMicrophone && !analysis.speech?.length,
+              analysis: { ...analysis, sessions: analysis.sessions?.map(({ video: _v, ...s }) => s) },
+            }
+          : {}),
+      };
+    },
+  );
+
   tool("screenstudio_editor_list", "List projects open in Screen Studio editor windows.", {}, READ, () =>
     editor.list(),
   );
@@ -37,10 +61,18 @@ export function register(server: McpServer, ctx: Context) {
 
   tool(
     "screenstudio_editor_apply",
-    "Edit the open project live in the editor window. Ops run in order, all times in source ms: setSlices (full ordered list of kept ranges with speed, optional per-clip volume, hideCursor, disableSmoothMouseMovement), addZoom (manual by default: target x/y 0-1 in the cropped frame is required and Screen Studio places it at the middle of the area the camera leaves free, so check the frame; follow:true only when the pointer itself is the subject, like a drag; to move between spots add back-to-back zooms, the next starting where the last ends, never re-aim one; presentation 'loupe' for the glass loupe with optional loupe radius/bevel/chromaticAberration/glassOptics), updateZoom, removeZoom, clearZooms, addLayout (camera layout for a stretch: camera-overlay, cutout-camera, split-screen, fullscreen-camera, screen-only, with options), addMask (sensitive-data blur or highlight, rects 0-1), updateItem/removeItem/clearTrack (layouts, masks, zooms; updateItem on a mask takes fields.rects 0-1 like addMask, or fields.bounds in capture points as editor_state shows them), config (any dotted setting from editor_state includeConfig, e.g. crop.rect01, captions.position01, defaultLayout.type, camera.background.edgeFalloff01, styles.background.systemName, device.frameKey). Timeline ops also include splitAt, cutRange (split both ends and delete the middle), removeSlice, mergeSlices, updateSlice (speed, volume up to 1, system/device audio, hideCursor, disableSmoothMouseMovement), resetCuts, restoreAutoZooms (Screen Studio's own click zooms), duplicateItem, setTrackDisabled, and clearTrack/removeItem for voiceOvers. With show (default) every step plays out in the editor window wherever it is, without taking focus: the playhead jumps to each edit, the timeline is split and pieces deleted one by one, new zooms, layouts and masks drop in selected, and each setting changes with its sidebar panel open (stepMs per step, 350 by default; show:false applies instantly). Returns a checkpoint, the new timeline and a pacing and visual-settings check. Cmd+Z in the app also works. Saves after each apply unless save:false. If an op fails, the result has partial:true, failedAt and error; the ops before it stay applied, nothing is saved, and screenstudio_editor_restore with the checkpointId undoes the batch.",
+    "Edit the open project live in the editor window. Ops run in order, all times in source ms: setSlices (full ordered list of kept ranges with speed, optional per-clip volume, hideCursor, disableSmoothMouseMovement), addZoom (manual by default: target x/y 0-1 in the cropped frame is required and Screen Studio places it at the middle of the area the camera leaves free, so check the frame; follow:true only when the pointer itself is the subject, like a drag; to move between spots add back-to-back zooms, the next starting where the last ends, never re-aim one; presentation 'loupe' for the glass loupe with optional loupe radius/bevel/chromaticAberration/glassOptics), updateZoom, removeZoom, clearZooms, addLayout (camera layout for a stretch: camera-overlay, cutout-camera, split-screen, fullscreen-camera, screen-only, with options), addMask (sensitive-data blur or highlight, rects 0-1), updateItem/removeItem/clearTrack (layouts, masks, zooms; updateItem on a mask takes fields.rects 0-1 like addMask, or fields.bounds in capture points as editor_state shows them), config (any dotted setting from editor_state includeConfig, e.g. crop.rect01, captions.position01, defaultLayout.type, camera.background.edgeFalloff01, styles.background.systemName, device.frameKey). Timeline ops also include splitAt, cutRange (split both ends and delete the middle), removeSlice, mergeSlices, updateSlice (speed, volume up to 1, system/device audio, hideCursor, disableSmoothMouseMovement), resetCuts, restoreAutoZooms (Screen Studio's own click zooms), duplicateItem, setTrackDisabled, and clearTrack/removeItem for voiceOvers. With show:true every step plays out in the editor window wherever it is, without taking focus: the playhead jumps to each edit, the timeline is split and pieces deleted one by one, new zooms, layouts and masks drop in selected, and each setting changes with its sidebar panel open (stepMs per step, 350 by default; show:false is the default and applies instantly). Stops if the project changes during a paced batch, and reads back config values instead of claiming success for ignored settings. Returns a checkpoint, the new timeline and a pacing and visual-settings check. Cmd+Z in the app also works. Saves after each apply unless save:false. If an op fails, the result has partial:true, failedAt and error; the ops before it stay applied, nothing is saved, and screenstudio_editor_restore with the checkpointId undoes the batch.",
     {
       projectPath: path,
       sceneId: z.string().optional(),
+      expectedGeneration: z
+        .number()
+        .int()
+        .min(0)
+        .optional()
+        .describe(
+          "editGeneration from editor_state; stops before editing if the person changed the project.",
+        ),
       ops: z.array(editOp).min(1).max(100),
       style: z.enum(STYLE_NAMES).optional().describe(`Default ${DEFAULT_STYLE}, or the recipe's.`),
       recipe: z
@@ -49,7 +81,7 @@ export function register(server: McpServer, ctx: Context) {
         .describe("The recipe the plan followed, so the pacing check judges by its rules and look."),
       recipeOverrides: z.record(z.string(), z.unknown()).optional(),
       brand: z.string().min(1).max(40).optional(),
-      show: z.boolean().default(true),
+      show: z.boolean().default(false),
       stepMs: z.number().int().min(80).max(2000).default(350),
       save: z.boolean().default(true),
     },
@@ -62,7 +94,7 @@ export function register(server: McpServer, ctx: Context) {
         a.sceneId,
         a.ops,
         a.show ? { stepMs: a.stepMs } : undefined,
-        { save: a.save, signal: extra.signal },
+        { save: a.save, signal: extra.signal, expectedGeneration: a.expectedGeneration },
       );
       const partial = "partial" in applied;
       const t = await ctx.timeline(a.projectPath, a.sceneId);

@@ -36,9 +36,9 @@ Example apply:
 }
 ```
 
-Applies run in show mode by default: the person watches the playhead move, the timeline get chopped and each panel change in Screen Studio. `show: false` applies instantly.
+Applies run instantly by default (`show: false`), with the result live in the same editor. Use `show: true` when the person wants to watch or film each step. `screenstudio_edit_context` collects the current window, live settings, timeline and analysis in one call. Use `analyze: false` for settings-only adjustments and pass its `editGeneration` as `expectedGeneration` when applying.
 
-Each apply saves the project unless `save: false`. Duplicate first (`screenstudio_project_duplicate`), or pass `save: false` while experimenting.
+Each apply saves the project unless `save: false`. Work in the current editor by default and copy only when the person asks. Recovery uses the app's undo history and apply checkpoints; preserve any manual changes made after a checkpoint.
 
 Slices and zooms use source time; the editor state, pacing report and frames use playback time. Every apply returns both.
 

@@ -153,6 +153,7 @@ export async function readTranscript(studio: Studio, projectPath: string) {
   const offsets = await sessionOffsets(projectPath);
   const data = await studio.evaluate<any[]>(
     `const v = await bridge.client.query('captions.getTranscript', { projectPath: ${j(projectPath)} });
+     if (!v) return [];
      return [...v.microphoneSessions.entries()].map(([k, x]) => ({ session: Number(k), generator: x.generator, generatedAt: x.generatedAt, words: x.transcript }));`,
   );
   const words: Word[] = [];

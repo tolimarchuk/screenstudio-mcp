@@ -157,6 +157,10 @@ export function validateConfigChange(config: any, key: string, value: unknown): 
       Object.keys(configFields).find((k) => k.startsWith(`${key}.`)) ?? "styles.background.color";
     throw new Error(`Set one field inside the ${key} group, like ${example}, not the whole group.`);
   }
+  // Screen Studio omits this optional crop until the person uses its crop UI.
+  // Only this known optional field may be initialized, never arbitrary keys.
+  if (key === "camera.crop01" && config.camera && !Object.hasOwn(config.camera, "crop01"))
+    return configFields[key].parse(value);
   const current = currentValue(config, parts, key);
   if (Object.hasOwn(configFields, key)) return configFields[key].parse(value);
   for (let i = parts.length - 1; i >= 2; i--) {

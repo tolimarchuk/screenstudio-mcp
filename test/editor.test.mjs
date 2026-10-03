@@ -6,6 +6,22 @@ import { configPartial, prepareOps } from "../dist/studio/editor/ops.js";
 import { PRELUDE, applyScript, clipFields } from "../dist/studio/editor/page.js";
 import { Editor } from "../dist/studio/editor/editor.js";
 
+test("the current project is the focused editor, or the only editor", async () => {
+  const e = new Editor({ path: async (p) => p });
+  e.list = async () => [
+    { projectPath: "/original", focused: true },
+    { projectPath: "/copy", focused: false },
+  ];
+  assert.equal(await e.current(), "/original");
+  assert.equal(await e.current("/copy"), "/copy");
+  e.list = async () => [{ projectPath: "/only", focused: false }];
+  assert.equal(await e.current(), "/only");
+  e.list = async () => [{ projectPath: "/a" }, { projectPath: "/b" }];
+  await assert.rejects(e.current(), /Choose/);
+  e.list = async () => [];
+  await assert.rejects(e.current(), /No project/);
+});
+
 const scene = (tracks) => ({
   sourceMs: 10000,
   config: { cursor: { size: 48 }, styles: { screenBorderRadius: 10 } },
@@ -189,7 +205,7 @@ class Collection {
 }
 
 const PATH = "/p.screenstudio";
-function editor({ slices = [], zooms = [], voiceOvers } = {}) {
+function editor({ slices = [], zooms = [], voiceOvers, config = {} } = {}) {
   const sc = {
     id: "s1",
     slices: new Collection(slices),
@@ -200,7 +216,18 @@ function editor({ slices = [], zooms = [], voiceOvers } = {}) {
   };
   const busy = {};
   const c = {
-    project: { playbackDurationMs: 10000, projectConfig: { update() {} } },
+    project: {
+      playbackDurationMs: 10000,
+      editGeneration: 0,
+      serialize: () => ({ config }),
+      projectConfig: {
+        update(changes) {
+          for (const [group, fields] of Object.entries(changes))
+            Object.assign((config[group] ??= {}), fields);
+          c.project.editGeneration++;
+        },
+      },
+    },
     view: {},
     playback: {},
   };
@@ -208,9 +235,92 @@ function editor({ slices = [], zooms = [], voiceOvers } = {}) {
   return {
     sc,
     busy,
-    run: (ops) => new (async () => {}).constructor("__ss", applyScript(PATH, "s1", ops))(ss),
+    c,
+    run: (ops, show, generation) =>
+      new (async () => {}).constructor("__ss", applyScript(PATH, "s1", ops, show, generation))(ss),
   };
 }
+
+test("config batches preserve settings changed by earlier config ops", () => {
+  const config = { camera: { background: { blurAmount01: 0, edgeFalloff01: 0.2 } } };
+  const prepared = prepareOps(
+    [
+      { op: "config", changes: { "camera.background.edgeFalloff01": 0.4 } },
+      { op: "config", changes: { "camera.background.blurAmount01": 0.3 } },
+    ],
+    { ...scene(), config },
+  );
+  assert.equal(prepared[1].partial.camera.background.edgeFalloff01, 0.4);
+  assert.equal(config.camera.background.edgeFalloff01, 0.2);
+});
+
+test("a late invalid config is rejected before any scene edits run", () => {
+  const s = scene({ zooms, layouts: [], masks: [] });
+  assert.throws(() =>
+    prepareOps(
+      [
+        { op: "clearZooms" },
+        { op: "config", changes: { "cursor.size": 64, "styles.screenBorderRadius": -1 } },
+      ],
+      s,
+    ),
+  );
+  assert.equal(s.tracks.zooms.length, 2);
+});
+
+test("a stale edit generation refuses the whole batch", async () => {
+  const e = editor({ zooms });
+  e.c.project.editGeneration = 2;
+  await assert.rejects(e.run([{ op: "clearZooms" }], undefined, 1), /changed/);
+  assert.equal(e.sc.zooms.length, 2);
+});
+
+test("a manual edit during a shown config batch stops without overwriting it", async () => {
+  const config = { cursor: { size: 48 }, camera: { sharpen01: 0 } };
+  const e = editor({ config });
+  e.c.view.setSidebarRoot = () => {
+    config.cursor.size = 72;
+    e.c.project.editGeneration++;
+  };
+  const r = await e.run([{ op: "config", partial: { cursor: { size: 64 }, camera: { sharpen01: 0.2 } } }], {
+    stepMs: 1,
+  });
+  assert.equal(r.failedAt, 0);
+  assert.match(r.error, /changed/);
+  assert.equal(config.cursor.size, 72);
+  assert.equal(config.camera.sharpen01, 0);
+});
+
+test("a manual change between paced steps leaves later settings untouched", async () => {
+  const config = { cursor: { size: 48 }, camera: { sharpen01: 0 } };
+  const e = editor({ config });
+  let timer;
+  e.c.view.setSidebarRoot = () => {
+    timer = setTimeout(() => {
+      config.cursor.size = 72;
+      e.c.project.editGeneration++;
+    }, 1);
+  };
+  try {
+    const r = await e.run([{ op: "config", partial: { cursor: { size: 64 }, camera: { sharpen01: 0.2 } } }], {
+      stepMs: 10,
+    });
+    assert.equal(r.failedAt, 0);
+    assert.match(r.error, /changed/);
+    assert.equal(config.cursor.size, 72);
+    assert.equal(config.camera.sharpen01, 0);
+  } finally {
+    clearTimeout(timer);
+  }
+});
+
+test("a setting the app changes or ignores is reported instead of claiming success", async () => {
+  const e = editor({ config: { cursor: { size: 48 } } });
+  e.c.project.projectConfig.update = () => {};
+  const r = await e.run([{ op: "config", partial: { cursor: { size: 64 } } }]);
+  assert.equal(r.failedAt, 0);
+  assert.match(r.error, /cursor.size/);
+});
 const slice = (id, sourceStartMs, sourceEndMs, extra = {}) => ({
   id,
   sourceStartMs,

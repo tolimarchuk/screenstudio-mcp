@@ -2,6 +2,14 @@
 
 New releases go at the top.
 
+## 0.5.4 (2026-10-03)
+
+- **Edit the current window.** Editing starts in the existing focused project, preserving the person's camera size, crop and other adjustments. Project copies are created only when requested.
+- **Apply edits directly by default.** `show: true` remains available to demonstrate each step. In one paired full-edit replay, the same prepared edit took 14.98 seconds with visible steps and 0.40 seconds directly, about 37 times faster. Both retained the same pacing and visual review. See `docs/faster-editing.md` for the method and limits.
+- **Start with one context read.** `screenstudio_edit_context` returns the current settings, timeline and footage analysis together; `analyze: false` keeps small corrections fast.
+- **Protect newer adjustments.** Edit generation checks stop outdated batches, and config read-back reports settings the app ignored. Preview captures check the requested playhead and project generation before and after capture.
+- **Fix nested updates and missing data.** Successive config changes preserve earlier changes, optional camera crops can be initialized, and an absent transcript returns empty timing data.
+
 ## 0.5.3 (2026-10-02)
 
 - **Zooms are manual by default.** The planner gives every zoom one fixed position on what matters. Following the mouse is only for tracking the pointer itself, like a drag.

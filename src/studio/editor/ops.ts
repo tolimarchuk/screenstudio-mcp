@@ -223,7 +223,8 @@ export function prepareOps(
     tracks?: SceneTracks;
   },
 ) {
-  const { sourceMs: source, config, captureSize: size } = scene;
+  const { sourceMs: source, captureSize: size } = scene;
+  const config = structuredClone(scene.config);
   const inRecording = (startMs: number, endMs: number) => endMs > startMs && endMs <= source + 1;
   // null once a track's contents can no longer be known ahead (duplicates, auto zooms).
   const tracks: Record<ItemTrack, Range[] | null> = {
@@ -277,7 +278,11 @@ export function prepareOps(
     }
     if (op.op === "addZoom" && !inRecording(op.startMs, op.endMs))
       throw new Error(`Zoom ${op.startMs}-${op.endMs} must be positive and inside the recording.`);
-    if (op.op === "config") return { op: "config", partial: configPartial(config, op.changes) };
+    if (op.op === "config") {
+      const partial = configPartial(config, op.changes);
+      for (const [group, fields] of Object.entries(partial)) Object.assign(config[group], fields);
+      return { op: "config", partial };
+    }
     if (op.op === "cutRange" && !inRecording(op.startMs, op.endMs))
       throw new Error(`cutRange ${op.startMs}-${op.endMs} must be positive and inside the recording.`);
     if ((op.op === "addLayout" || op.op === "addMask") && !inRecording(op.startMs, op.endMs))
