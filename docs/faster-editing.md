@@ -55,6 +55,22 @@ An initial run while the editor was behind another window returned unchanged pre
 
 The repeatable comparison is `scripts/compare-edit-latency.mjs`. Pass an installed package directory as its first argument; it measures settings reads by default. Add `--edit` to temporarily apply and restore styling and capture both results. Keep the editor visible and paused. Screen content and project names stay outside the report.
 
+## Full edit replay with both modes
+
+A second comparison reset the existing editor to the first pre-edit checkpoint before each run, with the full 138.231-second timeline, original automatic zooms, full camera frame and caption display off. Both runs started at 0:00 and applied the same prepared edit: clear automatic zooms, apply 38 changed settings, keep five source ranges at normal speed, and add one manual zoom. The resulting video was 106.052 seconds long, using the approved camera size and shoulder crop.
+
+| Stage | Visible steps, 350 ms interval | Direct application |
+| --- | ---: | ---: |
+| Apply full batch and check pacing | 14,975 ms | 401 ms |
+| Focus editor and capture five moments | 7,604 ms | 7,606 ms |
+| Apply and review together | 22,579 ms | 8,007 ms |
+
+Direct application took about 37× less time for the batch, and about 65% less time including the same visual review. This is one paired full replay, not an average across recordings. Both used the new build. Planning, existing transcript generation, reset, final save and export were outside the timers. The comparison tests replaying the prepared edit rather than deciding a fresh edit.
+
+Both results matched the approved settings and timeline after excluding generated item ids. Both pacing reports were good with no issues. Five captured moments covered the opening, a cut, the zoom, the main result region and the ending. The captions and call controls remained visible with the approved camera framing. The editor was left saved at 0:00 with the approved edit, in the same project.
+
+This replay exposed the more precise preview condition: activating the app alone did not focus the editor window, and all requested times could return the opening image. Focusing the existing editor window before capture produced distinct, correctly timed frames. The completed comparison rejected repeated opening images and used that focus step in both modes. The capture implementation should incorporate editor focus and a renderer completion signal; app activation and model timestamps alone are insufficient.
+
 ## Further work, in priority order
 
 1. **Make preview readiness come from the renderer.** A fixed 700 ms wait cannot prove that the screen, camera and captions have finished drawing, even if the playhead is correct. Hidden editor windows stop their animation callbacks, so waiting on those callbacks broke real capture during investigation and was removed. Add a rendering completion signal, compare preview frames with exported frames, and test unchanged-time previews after config changes. This is the highest remaining quality issue.
