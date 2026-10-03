@@ -54,6 +54,7 @@ const __ss = (() => {
     const data = p.serialize();
     return {
       projectPath: p.path, name: p.name, dirty: p.isDirty,
+      editGeneration: p.editGeneration,
       focused: c === window.$$focused,
       playheadMs: c.playback.playbackTimeMs, playing: c.playback.isPlaying,
       playbackDurationMs: p.playbackDurationMs, sourceDurationMs: p.sourceDurationMs,
@@ -74,6 +75,26 @@ const CLIP_FIELDS = {
   hideCursor: false,
   disableSmoothMouseMovement: false,
 };
+
+/** Refuses a preview taken at a different time or after an intervening edit. */
+export const previewSeekScript = (path: string, playbackMs: number) => `
+  const c = __ss.edit(${j(path)});
+  const editGeneration = c.project.editGeneration;
+  const requested = Math.max(0, Math.min(${Number(playbackMs)}, c.project.playbackDurationMs));
+  c.playback.pause();
+  c.playback.goTo(requested);
+  await new Promise((r) => setTimeout(r, 700));
+  const w = c.view.targetWindow;
+  // Editor windows can be hidden while the app's main renderer stays visible.
+  // Their requestAnimationFrame stops, so it is not a reliable readiness signal.
+  if (c.project.editGeneration !== editGeneration)
+    throw new Error('The project changed during preview capture. Read the current editor state.');
+  if (c.playback.isPlaying || Math.abs(c.playback.playbackTimeMs - requested) > 1)
+    throw new Error('The playhead moved during preview capture. Stop scrubbing before requesting another frame.');
+  if ([...w.document.querySelectorAll('video')].some((v) => v.seeking))
+    throw new Error('The preview is still seeking. Retry after it settles.');
+  return { playheadMs: Math.round(c.playback.playbackTimeMs), editGeneration };
+`;
 
 /**
  * Per-clip settings for a new slice: those of the existing slice it overlaps
@@ -102,8 +123,15 @@ export const applyScript = (
   sceneId: string,
   prepared: unknown[],
   show?: { stepMs: number },
+  expectedGeneration?: number,
 ) => `
       const c = __ss.edit(${j(path)});
+      let generation = ${expectedGeneration ?? "c.project.editGeneration"};
+      const unchanged = () => {
+        if (generation !== undefined && c.project.editGeneration !== generation)
+          throw new Error("The project changed while preparing or applying this edit. Read the current editor state and continue from the person's changes.");
+      };
+      unchanged();
       const sc = __ss.scene(c, ${j(sceneId)});
       const ops = ${j(prepared)};
       if (ops.some((o) => o.track === 'voiceOvers') && typeof sc.voiceOvers.replace !== 'function')
@@ -114,10 +142,14 @@ export const applyScript = (
       const SHOW = ${j(!!show)};
       const STEP = ${Number(show?.stepMs ?? 0)};
       const view = c.view, pb = c.playback;
-      const wait = (ms) => SHOW ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve();
+      const wait = async (ms) => {
+        generation = c.project.editGeneration;
+        if (SHOW) await new Promise((r) => setTimeout(r, ms));
+        unchanged();
+      };
       const at = async (sourceMs) => { if (!SHOW) return; try { pb.pause(); pb.goToSourceTime(Math.max(0, sourceMs)); } catch {} await wait(STEP * 0.5); };
       const select = (item) => { if (SHOW) try { view.setSidebarItem(item); } catch {} };
-      const root = (r) => { if (SHOW) try { view.setSidebarRoot(r); } catch {} };
+      const root = (r) => { if (SHOW) { try { view.setSidebarRoot(r); } catch {} unchanged(); } };
       const track = (t) => { if (SHOW) try { view.setFocusedTrack(t); } catch {} };
       if (SHOW) { try { view.setVisiblePlaybackDurationMs(c.project.playbackDurationMs * 1.05); } catch {} await wait(STEP * 0.5); }
       const ROOTS = { styles: 'background', output: 'background', crop: 'background', device: 'background', camera: 'background', defaultLayout: 'background', cursor: 'cursor', captions: 'captions', audio: 'audio', animations: 'animation', zooms: 'animation', processing: 'audio' };
@@ -329,6 +361,15 @@ export const applyScript = (
               for (const [field, value] of Object.entries(fields)) { c.project.projectConfig.update({ [group]: { [field]: value } }); await wait(STEP * 0.45); }
             }
           } else c.project.projectConfig.update(o.partial);
+          // Read back the actual model, including values the app may clamp or ignore.
+          const actual = c.project.serialize().config;
+          const check = (wanted, got, key) => {
+            if (wanted && typeof wanted === 'object' && !Array.isArray(wanted)) {
+              for (const [field, value] of Object.entries(wanted)) check(value, got?.[field], key ? key + '.' + field : field);
+            } else if (JSON.stringify(wanted) !== JSON.stringify(got))
+              throw new Error('Setting ' + key + ' did not keep the requested value. Read the editor state before continuing.');
+          };
+          check(o.partial, actual, '');
           out.push({ op: o.op, groups: Object.keys(o.partial) });
         }
         } catch (e) { failedAt = i; error = e?.message ?? String(e); break; }

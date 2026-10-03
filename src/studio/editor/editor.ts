@@ -13,7 +13,7 @@ import { round } from "../timeline.js";
 import { assertUuid } from "../util.js";
 import { describeScene } from "./describe.js";
 import { prepareOps, type EditOp } from "./ops.js";
-import { PRELUDE, applyScript } from "./page.js";
+import { PRELUDE, applyScript, previewSeekScript } from "./page.js";
 const j = JSON.stringify;
 
 /** Size of the captured window or display, in the points mask bounds use. */
@@ -63,6 +63,19 @@ export class Editor {
     );
   }
 
+  /** Selects the person's existing editor without opening or copying anything. */
+  async current(projectPath?: string) {
+    if (projectPath) return this.studio.path(projectPath);
+    const editors = await this.list();
+    const focused = editors.filter((e) => e.focused);
+    if (focused.length === 1) return focused[0].projectPath as string;
+    if (editors.length === 1) return editors[0].projectPath as string;
+    if (!editors.length) throw new Error("No project is open in Screen Studio. Open the video to edit.");
+    throw new Error(
+      "Choose the Screen Studio editor to edit; several projects are open and none is focused.",
+    );
+  }
+
   async open(projectPath: string) {
     const path = await this.studio.path(projectPath);
     await this.studio.requireVersion("read");
@@ -93,6 +106,7 @@ export class Editor {
       projectPath: s.projectPath,
       name: s.name,
       unsavedChanges: s.dirty,
+      editGeneration: s.editGeneration,
       playheadMs: round(s.playheadMs),
       playing: s.playing,
       playbackDurationMs: round(s.playbackDurationMs),
@@ -153,12 +167,16 @@ export class Editor {
     sceneId: string | undefined,
     ops: EditOp[],
     show?: { stepMs: number },
-    options: { save?: boolean; signal?: AbortSignal } = {},
+    options: { save?: boolean; signal?: AbortSignal; expectedGeneration?: number } = {},
   ) {
     const path = await this.studio.path(projectPath);
     await this.studio.requireVersion();
     return this.locked(path, async () => {
       const before = await this.raw(path);
+      if (options.expectedGeneration !== undefined && options.expectedGeneration !== before.editGeneration)
+        throw new Error(
+          "The project changed since it was inspected. Read the current editor state before editing.",
+        );
       const scene = sceneId ? before.scenes.find((s: any) => s.id === sceneId) : before.scenes[0];
       if (!scene) throw new Error("Scene does not exist.");
       const source = Math.max(...scene.slices.map((s: any) => s.sourceEndMs), before.sourceDurationMs);
@@ -191,7 +209,10 @@ export class Editor {
       };
       options.signal?.addEventListener("abort", cancel, { once: true });
       try {
-        run = await this.run(applyScript(path, scene.id, prepared, show), show ? 600000 : 30000);
+        run = await this.run(
+          applyScript(path, scene.id, prepared, show, before.editGeneration),
+          show ? 600000 : 30000,
+        );
       } catch (e) {
         const err = new Error(
           `${e instanceof Error ? e.message : String(e)} Some ops may have been applied; screenstudio_editor_restore with checkpointId ${checkpointId} puts the editor back.`,
@@ -355,18 +376,20 @@ export class Editor {
     window: Awaited<ReturnType<Editor["frameWindow"]>>,
     playbackMs: number,
   ) {
-    const playheadMs = await this.run<number>(`
-      const c = __ss.edit(${j(path)});
-      c.playback.pause();
-      c.playback.goTo(${Number(playbackMs)});
-      await new Promise((r) => setTimeout(r, 700));
-      return Math.round(c.playback.playbackTimeMs);
-    `);
+    const { playheadMs, editGeneration } = await this.run<{ playheadMs: number; editGeneration: number }>(
+      previewSeekScript(path, playbackMs),
+    );
     const { tag, canvas: info } = window;
     const full = await this.studio.statePath(`editor-window-${tag}.png`);
     const out = join(this.studio.stateDir, `editor-frame-${tag}-${round(playbackMs)}.png`);
     try {
       await captureWindow(window.windowId, full);
+      await this.run(`
+        const c = __ss.edit(${j(path)});
+        if (Math.abs(c.playback.playbackTimeMs - ${playheadMs}) > 1 || c.project.editGeneration !== ${editGeneration})
+          throw new Error('The playhead or project changed during capture. Inspect the current editor before requesting another frame.');
+        return true;
+      `);
       const png = await readFile(full);
       // PNG width sits at byte 16 of the header; it gives the screen's backing scale.
       const scale = png.readUInt32BE(16) / info.outerWidth;

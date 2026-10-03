@@ -13,7 +13,7 @@ export function register(server: McpServer, ctx: Context) {
 
   tool(
     "screenstudio_project_duplicate",
-    "Copy a project bundle to a fresh destination, to keep the original untouched.",
+    "Copy a project bundle to a fresh destination only when the person asks for a copy. Editing defaults to the current open project; undo and apply checkpoints handle recovery.",
     { projectPath: path, destinationPath: path },
     WRITE,
     (a) => studio.duplicate(a.projectPath, a.destinationPath),
