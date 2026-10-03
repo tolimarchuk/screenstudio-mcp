@@ -86,4 +86,4 @@ Suggest: tackle renderer readiness next, because unreliable previews create rewo
 
 ## Delivery status
 
-The source changes and installed editing guidance are updated. The running connection still uses the installed package, so new server behavior needs a package update and a fresh client connection. Publishing a release is a separate step.
+Version 0.5.4 includes the current-window workflow, direct application default and editing safeguards. Existing client connections keep using the package they started with; update the package and start a fresh connection to use the new behavior.
