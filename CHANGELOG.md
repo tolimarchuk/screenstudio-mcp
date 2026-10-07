@@ -2,6 +2,12 @@
 
 New releases go at the top.
 
+## Unreleased
+
+- **One skill instead of three.** `screenstudio-record`, `screenstudio-edit` and `screenstudio-deliver` are now one `screenstudio` skill, so agents see a single catalog entry. Its `SKILL.md` lists the tools, the record, edit and deliver flow and the rules for every stage, and routes to a guide per stage (`references/record.md`, `edit.md`, `deliver.md`) and the existing references. The stage guides are also resources (`screenstudio://record`, `screenstudio://edit`, `screenstudio://deliver`), and the prompts paste the skill with the guides they need.
+- **Your own defaults.** Before recording or editing, the skill reads `~/.screenstudio-mcp/preferences.md` (in `SCREENSTUDIO_STATE_DIR` when set) if it exists: editing taste, pacing, narration voice and settings, credit rules. Its preferences override the skill's defaults.
+- **Installer.** `install` and `update` put the skill in Claude Code's skills folder and, for Codex, in `~/.agents/skills` (`$CODEX_HOME/skills` is deprecated). They remove the three old skill folders from Claude Code, `$CODEX_HOME/skills` and `~/.agents/skills`, but only folders the installer made: a copy with its marker, or a symlink to a screenstudio-mcp checkout's own skill folder. `uninstall` removes the new and old folders. `--agents-home` points at a folder other than `~/.agents`.
+
 ## 0.5.4 (2026-10-03)
 
 - **Edit the current window.** Editing starts in the existing focused project, preserving the person's camera size, crop and other adjustments. Project copies are created only when requested.

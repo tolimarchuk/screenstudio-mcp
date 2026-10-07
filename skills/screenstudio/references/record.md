@@ -1,10 +1,6 @@
----
-name: screenstudio-record
-description: Record a software walkthrough in Screen Studio by performing the demo yourself with visible, human-paced native clicks, typing, shortcuts and scrolling. Use when asked to record a screen, demonstrate a product, or capture an app workflow for a video.
----
 # Record a software walkthrough
 
-Deliver a saved Screen Studio project whose footage is easy to edit: deliberate cursor moves, a visible result after every action, and clean starting and ending states. Pair this with screenstudio-edit and screenstudio-deliver when a finished video is requested.
+Deliver a saved Screen Studio project whose footage is easy to edit: deliberate cursor moves, a visible result after every action, and clean starting and ending states. When a finished video is requested, continue with [edit](edit.md) and [deliver](deliver.md).
 
 ## Prepare
 
@@ -12,12 +8,12 @@ Deliver a saved Screen Studio project whose footage is easy to edit: deliberate 
 2. Decide the audience, destination and the one outcome the video shows. Default to a short silent walkthrough of one window, no microphone or camera.
 3. Write 3–6 beats: starting state → action → visible result, ending on the finished state. Use realistic demo data, never lorem ipsum or private records.
 4. `screenstudio_sources`; pick the exact window by app, title and ID. Size the window to about 1440×900 points so zooms stay sharp and text is legible. No tool resizes windows: launch a browser with `--window-size=1440,900` (see browser demos), or ask the person to size the window. Close notifications, unrelated tabs and anything private.
-5. Recording a website? Read [browser demos](references/browser-demos.md) (resource `screenstudio://browser-demos`): a clean app window in a fresh browser profile, scouting, rehearsing demo widgets and staying on the site.
+5. Recording a website? Read [browser demos](browser-demos.md) (resource `screenstudio://browser-demos`): a clean app window in a fresh browser profile, scouting, rehearsing demo widgets and staying on the site.
 6. Rehearse every beat once without recording: screenshot, find coordinates, confirm each step produces the expected result. Rehearsal is where you think; the take should not contain your thinking.
 
 ## Narrated videos
 
-Write the narration before recording and time each line at about 2.8 words a second. Each beat on screen lasts its line plus 0.3–0.5 seconds. Lines are voiced later, after the edit, with `screenstudio_narrate`.
+Write the narration before recording and time each line at about 2.8 words a second. Each beat on screen lasts its line plus 0.3–0.5 seconds. Lines are voiced later, after the edit, with `screenstudio_narrate`; [narration](narration.md) covers the whole voice-over workflow.
 
 Mark where each beat starts: `screenstudio_desktop_perform` with `markers: true` adds a recording marker before the beat's first step, and `minDurationMs` (a line's `beatMs` from `screenstudio_voice_lines`) makes the beat last as long as its narration line. `screenstudio_analyze` reads the markers back in source ms and `screenstudio_narrate` `pinToMarkers` puts each line on its beat.
 
@@ -44,4 +40,4 @@ Input fails when Accessibility permission is missing, focus changes, the window 
 
 ## Recovery
 
-A timeout can mean the change happened: inspect recording state before retrying. If the window moves, loses focus or a person interferes, input stops; inspect and continue. Never click through a permission dialog blindly. On a failed walkthrough, finish the recording to keep the footage and explain what remains. See [recovery](references/recovery.md) (resource `screenstudio://recovery`).
+A timeout can mean the change happened: inspect recording state before retrying. If the window moves, loses focus or a person interferes, input stops; inspect and continue. Never click through a permission dialog blindly. On a failed walkthrough, finish the recording to keep the footage and explain what remains. See [recovery](recovery.md) (resource `screenstudio://recovery`).

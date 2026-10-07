@@ -2,22 +2,33 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { readFile } from "node:fs/promises";
 
+const REFERENCES = "skills/screenstudio/references";
+
+/** The skill a client can install, and its stage guides that prompts paste in. */
+export const SKILL = "skills/screenstudio/SKILL.md";
+export const STAGES = {
+  record: `${REFERENCES}/record.md`,
+  edit: `${REFERENCES}/edit.md`,
+  deliver: `${REFERENCES}/deliver.md`,
+};
+
 /** Resource name to markdown file, relative to the package root. */
 export const RESOURCES = {
-  craft: "skills/screenstudio-edit/references/craft.md",
+  ...STAGES,
+  craft: `${REFERENCES}/craft.md`,
   coverage: "docs/coverage.md",
-  narration: "skills/screenstudio-edit/references/narration.md",
-  "browser-demos": "skills/screenstudio-record/references/browser-demos.md",
-  pacing: "skills/screenstudio-edit/references/pacing.md",
+  narration: `${REFERENCES}/narration.md`,
+  "browser-demos": `${REFERENCES}/browser-demos.md`,
+  pacing: `${REFERENCES}/pacing.md`,
   workflow: "docs/agent-workflow.md",
   compatibility: "docs/compatibility.md",
-  recovery: "skills/screenstudio-record/references/recovery.md",
-  recipes: "skills/screenstudio-edit/references/recipes.md",
-  story: "skills/screenstudio-edit/references/story.md",
-  variants: "skills/screenstudio-deliver/references/variants.md",
-  loops: "skills/screenstudio-deliver/references/loops.md",
-  brand: "skills/screenstudio-edit/references/brand.md",
-  privacy: "skills/screenstudio-edit/references/privacy.md",
+  recovery: `${REFERENCES}/recovery.md`,
+  recipes: `${REFERENCES}/recipes.md`,
+  story: `${REFERENCES}/story.md`,
+  variants: `${REFERENCES}/variants.md`,
+  loops: `${REFERENCES}/loops.md`,
+  brand: `${REFERENCES}/brand.md`,
+  privacy: `${REFERENCES}/privacy.md`,
 };
 
 /** Reads a file shipped with the package. */

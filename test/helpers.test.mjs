@@ -100,7 +100,7 @@ test("desktop actions map to the native helper's arguments", () => {
 
 test("every guidance resource ships with the package", async () => {
   const { files } = JSON.parse(await readFile("package.json", "utf8"));
-  for (const path of [...Object.values(RESOURCES), "skills/screenstudio-edit/SKILL.md"]) {
+  for (const path of [...Object.values(RESOURCES), "skills/screenstudio/SKILL.md"]) {
     await access(path);
     assert.ok(
       files.some((f) => (f.endsWith("/") ? path.startsWith(f) : path === f)),

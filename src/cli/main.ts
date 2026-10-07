@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 // The screenstudio-mcp command: one command installs the MCP server and its
-// skills into Claude Code and Codex; `serve` (or a non-interactive start, the
+// skill into Claude Code and Codex; `serve` (or a non-interactive start, the
 // way an MCP client launches it) runs the server over stdio.
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { APP_BUILD } from "../studio/compat.js";
 import { codexBlock, withoutTable } from "./codex.js";
+import { LEGACY_SKILLS, installSkills, removeSkills, skillNames } from "./skills.js";
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const pkg = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
 const NAME = "screenstudio";
-const MARKER = ".screenstudio-mcp";
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith("-"));
 const flag = (name: string) => args.includes(`--${name}`);
@@ -27,6 +27,8 @@ const option = (name: string) => {
 
 const claudeHome = option("claude-home") ?? process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
 const codexHome = option("codex-home") ?? process.env.CODEX_HOME ?? join(homedir(), ".codex");
+// Codex reads user skills from ~/.agents/skills; $CODEX_HOME/skills is its deprecated location.
+const agentsHome = option("agents-home") ?? join(homedir(), ".agents");
 const customHomes = !!(option("claude-home") || option("codex-home"));
 
 /** How MCP clients start the server: the published package, or this checkout with --local. */
@@ -61,36 +63,22 @@ function targets() {
 
 // ---------- skills ----------
 
-async function skillNames() {
-  return (await readdir(join(root, "skills"), { withFileTypes: true }))
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
+/** Installs the skill into `dir`, replacing only folders this installer made. */
+async function addSkills(dir: string, label: string) {
+  const { installed, kept } = await installSkills(root, dir, { version: pkg.version, force: flag("force") });
+  for (const path of kept) warn(`${label}: kept your own ${path} (pass --force to replace it)`);
+  if (installed.length) ok(`${label}: skill ${installed.join(", ")} in ${dir}`);
 }
 
-/** Copies each skill into `<home>/skills`, replacing only folders this installer made. */
-async function installSkills(home: string, label: string) {
-  const dir = join(home, "skills");
-  await mkdir(dir, { recursive: true });
-  for (const name of await skillNames()) {
-    const dest = join(dir, name);
-    if (existsSync(dest) && !existsSync(join(dest, MARKER)) && !flag("force")) {
-      warn(`${label}: kept your own ${dest} (pass --force to replace it)`);
-      continue;
-    }
-    await rm(dest, { recursive: true, force: true });
-    await cp(join(root, "skills", name), dest, { recursive: true });
-    await writeFile(join(dest, MARKER), `${pkg.version}\n`);
-  }
-  ok(`${label}: skills ${(await skillNames()).join(", ")} in ${dir}`);
+/** Removes the named skill folders from `dir`, only those this installer made. */
+async function dropSkills(dir: string, names: string[], label: string, why = "") {
+  const { removed, kept } = await removeSkills(dir, names);
+  for (const path of kept) warn(`${label}: kept ${path}, which screenstudio-mcp did not install`);
+  if (removed.length) ok(`${label}: removed ${removed.join(", ")} from ${dir}${why && ` (${why})`}`);
 }
 
-async function removeSkills(home: string, label: string) {
-  for (const name of await skillNames()) {
-    const dest = join(home, "skills", name);
-    if (existsSync(join(dest, MARKER))) await rm(dest, { recursive: true, force: true });
-  }
-  ok(`${label}: skills removed`);
-}
+/** Every skill folder this package installs now or installed before. */
+const allSkills = async () => [...(await skillNames(root)), ...LEGACY_SKILLS];
 
 // ---------- Claude Code ----------
 
@@ -99,7 +87,9 @@ async function claudeCli(...a: string[]) {
 }
 
 async function installClaude() {
-  await installSkills(claudeHome, "Claude Code");
+  const dir = join(claudeHome, "skills");
+  await addSkills(dir, "Claude Code");
+  await dropSkills(dir, LEGACY_SKILLS, "Claude Code", "replaced by the screenstudio skill");
   if (customHomes) return warn("Claude Code: custom home, so the MCP server was not registered");
   try {
     await claudeCli("mcp", "remove", "-s", "user", NAME).catch(() => {});
@@ -120,7 +110,7 @@ async function installClaude() {
 }
 
 async function uninstallClaude() {
-  await removeSkills(claudeHome, "Claude Code");
+  await dropSkills(join(claudeHome, "skills"), await allSkills(), "Claude Code");
   if (customHomes) return;
   await claudeCli("mcp", "remove", "-s", "user", NAME).then(
     () => ok("Claude Code: MCP server removed"),
@@ -131,7 +121,16 @@ async function uninstallClaude() {
 // ---------- Codex ----------
 
 async function installCodex() {
-  await installSkills(codexHome, "Codex");
+  const dir = join(agentsHome, "skills");
+  await addSkills(dir, "Codex");
+  await dropSkills(dir, LEGACY_SKILLS, "Codex", "replaced by the screenstudio skill");
+  // $CODEX_HOME/skills is deprecated; a skill left there would show up twice.
+  await dropSkills(
+    join(codexHome, "skills"),
+    await allSkills(),
+    "Codex",
+    "Codex reads skills from ~/.agents/skills",
+  );
   const file = join(codexHome, "config.toml");
   const before = existsSync(file) ? await readFile(file, "utf8") : "";
   if (before) await writeFile(`${file}.screenstudio-mcp.bak`, before);
@@ -141,7 +140,8 @@ async function installCodex() {
 }
 
 async function uninstallCodex() {
-  await removeSkills(codexHome, "Codex");
+  for (const home of [agentsHome, codexHome])
+    await dropSkills(join(home, "skills"), await allSkills(), "Codex");
   const file = join(codexHome, "config.toml");
   if (!existsSync(file)) return;
   await writeFile(file, `${withoutTable(await readFile(file, "utf8"))}\n`);
@@ -255,14 +255,17 @@ function help() {
 Usage:
   npx screenstudio-mcp              install into Claude Code and Codex, then check this Mac
   npx screenstudio-mcp doctor       check Screen Studio, ffmpeg, permissions
-  npx screenstudio-mcp update       reinstall the latest skills and server
-  npx screenstudio-mcp uninstall    remove the server and skills
+  npx screenstudio-mcp update       reinstall the latest skill and server
+  npx screenstudio-mcp uninstall    remove the server and skill
   npx screenstudio-mcp serve        run the MCP server over stdio (what clients launch)
 
 Options:
   --target claude|codex|all   where to install (default: all that are present)
   --local                     register this checkout instead of the npm package
-  --force                     replace skill folders with the same names
+  --force                     replace a skill folder with the same name
+  --claude-home <dir>         Claude Code folder (default: $CLAUDE_CONFIG_DIR or ~/.claude)
+  --codex-home <dir>          Codex folder for config.toml (default: $CODEX_HOME or ~/.codex)
+  --agents-home <dir>         folder whose skills/ Codex reads (default: ~/.agents)
 `);
 }
 

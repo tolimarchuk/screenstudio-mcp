@@ -78,8 +78,8 @@ test("local links resolve, and skill references are served as resources", async 
   }
 });
 
-test("the edit skill's ops table lists only real ops", () => {
-  const table = doc("skills/screenstudio-edit/SKILL.md").split("## Ops reference")[1].split("\n## ")[0];
+test("the edit reference's ops table lists only real ops", () => {
+  const table = doc("skills/screenstudio/references/edit.md").split("## Ops reference")[1].split("\n## ")[0];
   const named = table
     .split("\n")
     .filter((line) => line.startsWith("| `"))
@@ -107,9 +107,33 @@ test("docs agree with the code's default style", () => {
 });
 
 test("craft lists exactly the layouts that can be the default", () => {
-  const sentence = doc("skills/screenstudio-edit/references/craft.md").match(
+  const sentence = doc("skills/screenstudio/references/craft.md").match(
     /The default \(`defaultLayout\.type`\) can be ([^.]+)\./,
   )[1];
   const listed = [...sentence.matchAll(/`([a-z-]+)`/g)].map((m) => m[1]).sort();
   assert.deepEqual(listed, [...configFields["defaultLayout.type"].options].sort());
+});
+
+test("prompts paste the skill without its front matter, then the stage guides", async () => {
+  const client = new Client({ name: "prompts", version: "1" });
+  await client.connect(
+    new StdioClientTransport({ command: process.execPath, args: ["dist/mcp/main.js"], stderr: "pipe" }),
+  );
+  try {
+    const text = async (name, args) =>
+      (await client.getPrompt({ name, arguments: args })).messages[0].content.text;
+    const demo = await text("screenstudio_demo", { goal: "sign up" });
+    const edit = await text("screenstudio_edit", { projectPath: "/tmp/Demo.screenstudio" });
+    for (const prompt of [demo, edit]) {
+      assert.ok(prompt.includes("# Screen Studio videos"));
+      assert.ok(!prompt.includes("\nname: screenstudio\n"));
+      assert.ok(prompt.includes("# Edit a Screen Studio video"));
+    }
+    assert.ok(
+      demo.includes("# Record a software walkthrough") && demo.includes("# Deliver the finished video"),
+    );
+    assert.ok(!edit.includes("# Record a software walkthrough"));
+  } finally {
+    await client.close();
+  }
 });

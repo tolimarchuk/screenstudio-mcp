@@ -27,7 +27,7 @@ You direct every edit in your own words. Presets are optional starting points.
 npx screenstudio-mcp
 ```
 
-This installs the server and the record, edit and deliver skills into Claude Code and Codex, then checks your Mac. Restart your agent and ask for a video.
+This installs the server and the `screenstudio` skill into Claude Code and Codex, then checks your Mac. Restart your agent and ask for a video.
 
 Or install it as a plugin.
 
@@ -80,6 +80,17 @@ An unofficial MCP for Screen Studio, not affiliated with its makers.
 
 In all: 46 tools, 20 edit operations and all 111 Screen Studio settings, with 148 device frames, 182 wallpapers, 24 cursor sets and 17 music tracks to choose from. See [docs/coverage.md](docs/coverage.md).
 
+## Your defaults
+
+Keep your own defaults in `~/.screenstudio-mcp/preferences.md` (or `preferences.md` in `SCREENSTUDIO_STATE_DIR` if you set it): editing taste, pacing, narration voice and settings, how the video credits you. The skill reads the file before recording or editing, and it overrides the skill's defaults; what you ask for in the moment still wins. It is plain Markdown in any shape, for example:
+
+```markdown
+- Pacing: calm, at most two zooms a minute.
+- Frame: dark gradient backdrop, captions off unless I ask.
+- Narration: one voice for every video, slightly faster than normal, music low under it.
+- Credits: none on screen.
+```
+
 ## Presets (optional)
 
 Every edit is custom. A preset is an optional starting point: name one in your request, then change anything about it in your own words.
@@ -114,7 +125,7 @@ Supported: Screen Studio up to 4.0.1 (build 4897), the tested build, on macOS. R
 npx screenstudio-mcp                  # install into Claude Code (and Codex if present), then check this Mac
 npx screenstudio-mcp doctor           # check Screen Studio, ffmpeg and permissions
 npx screenstudio-mcp@latest update    # move to the newest version
-npx screenstudio-mcp uninstall        # remove the server and skills
+npx screenstudio-mcp uninstall        # remove the server and skill
 ```
 
 <details>
@@ -139,7 +150,7 @@ tool_timeout_sec = 1800
 |---|---|
 | `SCREENSTUDIO_APP_PATH` | Path to Screen Studio, if it is not in Applications. |
 | `SCREENSTUDIO_PORT` | A fixed automation port (1024 to 65535) instead of a free one. |
-| `SCREENSTUDIO_STATE_DIR` | Where checkpoints, caches and brand kits live. Default `~/.screenstudio-mcp`. |
+| `SCREENSTUDIO_STATE_DIR` | Where checkpoints, caches, brand kits and your `preferences.md` live. Default `~/.screenstudio-mcp`. |
 | `SCREENSTUDIO_ALLOW_UNTESTED` | `1` allows recording and editing on a Screen Studio 4.x build other than 4.0.1 (build 4897), older or newer. |
 | `SCREENSTUDIO_ALLOW_APPS` | Comma-separated bundle ids of extra apps the agent may click and type in. Terminals, password managers and System Settings are skipped unless listed here. |
 | `SCREENSTUDIO_FFMPEG`, `SCREENSTUDIO_FFPROBE`, `SCREENSTUDIO_EDGE_TTS` | Paths to those tools, if they are not found automatically. |

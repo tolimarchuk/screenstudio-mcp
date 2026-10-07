@@ -444,7 +444,7 @@ test("clipped slices keep the planned speeds inside the range only", () => {
 });
 
 test("the variants reference lists every target with its real frame and render", async () => {
-  const doc = await readFile("skills/screenstudio-deliver/references/variants.md", "utf8");
+  const doc = await readFile("skills/screenstudio/references/variants.md", "utf8");
   const rows = new Map(
     [...doc.matchAll(/^\| `(\w+)` \| ([\d:]+) \| (\d+)p(\d+)? (MP4|GIF) \|/gm)].map((m) => [m[1], m]),
   );

@@ -10,7 +10,7 @@
     {
       "name": "screenstudio",
       "source": "./plugins/screenstudio",
-      "description": "Unofficial Screen Studio MCP server plus record, edit and export skills."
+      "description": "Unofficial Screen Studio MCP server plus a skill to record, edit and export videos."
     }
   ]
 }

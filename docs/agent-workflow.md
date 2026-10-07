@@ -1,6 +1,6 @@
 # Agent workflow
 
-Three skills teach recording, editing and delivery. Tool schemas are the contract. `screenstudio_status` reports the connection, app version, open editors, recording state and `knownSettings` (config keys with exact range checks).
+The `screenstudio` skill teaches recording, editing and delivery: its `SKILL.md` routes to a guide per stage, also served as `screenstudio://record`, `screenstudio://edit` and `screenstudio://deliver`. Tool schemas are the contract. `screenstudio_status` reports the connection, app version, open editors, recording state and `knownSettings` (config keys with exact range checks).
 
 ## Record
 

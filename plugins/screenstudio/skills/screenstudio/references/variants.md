@@ -16,7 +16,7 @@ No target is the default. Pick the places this video is actually going.
 | `docs` | 16:9 | 1080p30 MP4 | none | none beyond the aspect |
 | `gif` | 16:9 | 480p GIF | 0:15, 12 MB | converted with its own palette, frame rate then height halved until it fits |
 
-With `recipe` (see [recipes](../../screenstudio-edit/references/recipes.md)), `targets` may be left out: the recipe's own targets render. Its export settings apply too: its frame rate on every video target (camera footage stays at 30fps), its resolution on targets in its own aspect, read as the short side. GIFs keep their own size budget. The notes say what the recipe changed.
+With `recipe` (see [recipes](recipes.md)), `targets` may be left out: the recipe's own targets render. Its export settings apply too: its frame rate on every video target (camera footage stays at 30fps), its resolution on targets in its own aspect, read as the short side. GIFs keep their own size budget. The notes say what the recipe changed.
 
 Every result carries a `notes` line per target saying why it is rendered that way, and `checks` that flag a file over its target's length or size.
 
