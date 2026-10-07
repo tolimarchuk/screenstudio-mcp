@@ -28,7 +28,7 @@ Slices, zooms, markers and the footage analysis use source ms; the editor state,
 
 ## The flow
 
-1. **Record**, only for a new video: connect, write 3–6 beats, rehearse, record each beat in one take with `screenstudio_desktop_perform`, and finish to a saved project. For a narrated video, write and voice the script first so each beat lasts as long as its line.
+1. **Record**, only for a new video: connect, write 3–6 beats, rehearse, record each beat in one take with `screenstudio_desktop_perform`, and finish to a saved project. For a narrated video, write the script and voice it with `screenstudio_voice_lines` before recording, so each beat lasts as long as its line.
 2. **Edit**: read the current window with `screenstudio_edit_context`, look at the footage, plan, apply one batch, look at the result, refine one thing at a time, narrate, blur private text, save.
 3. **Deliver**: check pacing, render, check the file and its frames, listen, save, report.
 

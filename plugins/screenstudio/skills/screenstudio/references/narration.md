@@ -1,6 +1,6 @@
 # Narration
 
-A narrated demo is planned around the voice. Write the script first and time each line, record each beat to last as long as its line, edit, then voice the lines and pin them to the footage.
+A narrated demo is planned around the voice. Write the script, voice it first to time each line, record each beat to last as long as its line, edit, then pin the voiced lines to the footage.
 
 ## Write
 

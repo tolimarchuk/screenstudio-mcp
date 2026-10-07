@@ -13,7 +13,7 @@ Deliver a saved Screen Studio project whose footage is easy to edit: deliberate 
 
 ## Narrated videos
 
-Write the narration before recording and time each line at about 2.8 words a second. Each beat on screen lasts its line plus 0.3–0.5 seconds. Lines are voiced later, after the edit, with `screenstudio_narrate`; [narration](narration.md) covers the whole voice-over workflow.
+Write the narration and voice it before recording: `screenstudio_voice_lines` returns each line's spoken `durationMs` and a `beatMs` (the line plus 400ms), so each beat on screen lasts as long as its line. After the edit, `screenstudio_narrate` pins the same lines to the footage, reusing the cached clips when the voice and rate are unchanged; [narration](narration.md) covers the whole voice-over workflow.
 
 Mark where each beat starts: `screenstudio_desktop_perform` with `markers: true` adds a recording marker before the beat's first step, and `minDurationMs` (a line's `beatMs` from `screenstudio_voice_lines`) makes the beat last as long as its narration line. `screenstudio_analyze` reads the markers back in source ms and `screenstudio_narrate` `pinToMarkers` puts each line on its beat.
 
