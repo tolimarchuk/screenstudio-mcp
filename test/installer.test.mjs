@@ -168,3 +168,22 @@ test("uninstall removes the new and old skills from every location, and keeps th
   assert.deepEqual((await readdir(join(agents, "skills"))).sort(), ["screenstudio-edit", "unrelated"]);
   assert.doesNotMatch(await readFile(join(codex, "config.toml"), "utf8"), /mcp_servers\.screenstudio/);
 });
+
+test("with a custom Claude or Codex home and no --agents-home, the real ~/.agents is left alone", async () => {
+  const base = await scratch();
+  const home = join(base, "home");
+  await installedCopy(join(home, ".agents/skills"), "screenstudio");
+  const { stdout } = await run(
+    process.execPath,
+    [
+      "dist/cli/main.js",
+      "uninstall",
+      "--claude-home",
+      join(base, "claude"),
+      "--codex-home",
+      join(base, "codex"),
+    ],
+    { cwd: root, env: { ...process.env, HOME: home } },
+  );
+  assert.ok(existsSync(join(home, ".agents/skills/screenstudio", MARKER)), stdout);
+});

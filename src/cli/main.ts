@@ -4,7 +4,7 @@
 // way an MCP client launches it) runs the server over stdio.
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,9 +27,10 @@ const option = (name: string) => {
 
 const claudeHome = option("claude-home") ?? process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), ".claude");
 const codexHome = option("codex-home") ?? process.env.CODEX_HOME ?? join(homedir(), ".codex");
-// Codex reads user skills from ~/.agents/skills; $CODEX_HOME/skills is its deprecated location.
-const agentsHome = option("agents-home") ?? join(homedir(), ".agents");
 const customHomes = !!(option("claude-home") || option("codex-home"));
+// Codex reads user skills from ~/.agents/skills; $CODEX_HOME/skills is its deprecated location.
+// A run with a custom home leaves the real ~/.agents alone unless --agents-home names a folder.
+const agentsHome = option("agents-home") ?? (customHomes ? undefined : join(homedir(), ".agents"));
 
 /** How MCP clients start the server: the published package, or this checkout with --local. */
 const server = flag("local")
@@ -121,9 +122,11 @@ async function uninstallClaude() {
 // ---------- Codex ----------
 
 async function installCodex() {
-  const dir = join(agentsHome, "skills");
-  await addSkills(dir, "Codex");
-  await dropSkills(dir, LEGACY_SKILLS, "Codex", "replaced by the screenstudio skill");
+  if (agentsHome) {
+    const dir = join(agentsHome, "skills");
+    await addSkills(dir, "Codex");
+    await dropSkills(dir, LEGACY_SKILLS, "Codex", "replaced by the screenstudio skill");
+  } else warn("Codex: custom home, so the skill was not installed (pass --agents-home for its folder)");
   // $CODEX_HOME/skills is deprecated; a skill left there would show up twice.
   await dropSkills(
     join(codexHome, "skills"),
@@ -131,6 +134,7 @@ async function installCodex() {
     "Codex",
     "Codex reads skills from ~/.agents/skills",
   );
+  await mkdir(codexHome, { recursive: true });
   const file = join(codexHome, "config.toml");
   const before = existsSync(file) ? await readFile(file, "utf8") : "";
   if (before) await writeFile(`${file}.screenstudio-mcp.bak`, before);
@@ -141,7 +145,7 @@ async function installCodex() {
 
 async function uninstallCodex() {
   for (const home of [agentsHome, codexHome])
-    await dropSkills(join(home, "skills"), await allSkills(), "Codex");
+    if (home) await dropSkills(join(home, "skills"), await allSkills(), "Codex");
   const file = join(codexHome, "config.toml");
   if (!existsSync(file)) return;
   await writeFile(file, `${withoutTable(await readFile(file, "utf8"))}\n`);
@@ -265,7 +269,7 @@ Options:
   --force                     replace a skill folder with the same name
   --claude-home <dir>         Claude Code folder (default: $CLAUDE_CONFIG_DIR or ~/.claude)
   --codex-home <dir>          Codex folder for config.toml (default: $CODEX_HOME or ~/.codex)
-  --agents-home <dir>         folder whose skills/ Codex reads (default: ~/.agents)
+  --agents-home <dir>         folder whose skills/ Codex reads (default: ~/.agents, none with a custom home)
 `);
 }
 
