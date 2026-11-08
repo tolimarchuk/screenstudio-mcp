@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { Context } from "../context.js";
 import { DESTRUCTIVE, READ, WRITE, path, toolsOn } from "../tool.js";
-import { APP_BUILD, capabilities } from "../../studio/compat.js";
+import { APP_BUILD, capabilities, KNOWN_BUILDS } from "../../studio/compat.js";
 import { dependencies } from "../../studio/doctor.js";
 import { configFields } from "../../studio/project.js";
 import { ASPECTS, LOOKS, STYLES } from "../../studio/styles.js";
@@ -60,11 +60,14 @@ export function register(server: McpServer, { studio, editor }: Context) {
       };
       try {
         out.version = await studio.requireVersion("read");
-        out.tested = out.version === APP_BUILD;
+        out.tested = KNOWN_BUILDS.includes(out.version);
+        out.referenceBuild = APP_BUILD;
         out.connected = true;
         out.port = await studio.port();
         out.editors = await editor.list();
-        out.recording = await studio.state();
+        const recording = await studio.recordingSupport();
+        out.recording = recording.supported ? await studio.state() : null;
+        if (!recording.supported) out.recordingUnavailable = recording.reason;
       } catch (e) {
         out.connected = false;
         out.connection = e instanceof Error ? e.message : String(e);

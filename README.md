@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/screenstudio-mcp"><img alt="npm" src="https://img.shields.io/npm/v/screenstudio-mcp?style=flat-square&color=684cff"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-684cff?style=flat-square"></a>
-  <img alt="Screen Studio up to 4.0.1" src="https://img.shields.io/badge/Screen%20Studio-up%20to%204.0.1-684cff?style=flat-square">
+  <img alt="Screen Studio up to 4.1.0" src="https://img.shields.io/badge/Screen%20Studio-up%20to%204.1.0-684cff?style=flat-square">
 </p>
 
 Screen Studio MCP does two jobs:
@@ -107,11 +107,11 @@ Every edit is custom. A preset is an optional starting point: name one in your r
 
 ## Compatibility
 
-Supported: Screen Studio up to 4.0.1 (build 4897), the tested build, on macOS. Reading projects and footage works on any 4.x build. Recording and editing on any other build, older or newer, needs `SCREENSTUDIO_ALLOW_UNTESTED=1`. Turn off Screen Studio's auto-update to stay on the tested build. See [docs/compatibility.md](docs/compatibility.md).
+Supported: Screen Studio 4.0.1 (build 4897, the reference build) and 4.1.0 (build 5005) on macOS. Reading projects and footage works on any 4.x build. Recording, editing, previews, transcripts and exports work on both known builds; 4.1.0 records through the app's renderer modules instead of its bridge, and a build with neither makes the recording tools fail fast (`screenstudio_status` reports `recordingUnavailable`). Recording and editing on any other build, older or newer, needs `SCREENSTUDIO_ALLOW_UNTESTED=1`.
 
 ## Requirements
 
-- macOS with [Screen Studio](https://screen.studio) 4. Recording and editing need 4.0.1; see [Compatibility](#compatibility).
+- macOS with [Screen Studio](https://screen.studio) 4. Recording and editing work on 4.0.1 and 4.1.0; see [Compatibility](#compatibility).
 - Node.js 22 or newer.
 - `ffmpeg` and `ffprobe`: `brew install ffmpeg`.
 - Optional, for narration: `edge-tts` (`pipx install edge-tts`). Narration text is sent to Microsoft's online speech service.
@@ -151,7 +151,7 @@ tool_timeout_sec = 1800
 | `SCREENSTUDIO_APP_PATH` | Path to Screen Studio, if it is not in Applications. |
 | `SCREENSTUDIO_PORT` | A fixed automation port (1024 to 65535) instead of a free one. |
 | `SCREENSTUDIO_STATE_DIR` | Where checkpoints, caches, brand kits and your `preferences.md` live. Default `~/.screenstudio-mcp`. |
-| `SCREENSTUDIO_ALLOW_UNTESTED` | `1` allows recording and editing on a Screen Studio 4.x build other than 4.0.1 (build 4897), older or newer. |
+| `SCREENSTUDIO_ALLOW_UNTESTED` | `1` allows recording and editing on a Screen Studio 4.x build other than the known ones (4.0.1 build 4897, 4.1.0 build 5005), older or newer. |
 | `SCREENSTUDIO_ALLOW_APPS` | Comma-separated bundle ids of extra apps the agent may click and type in. Terminals, password managers and System Settings are skipped unless listed here. |
 | `SCREENSTUDIO_FFMPEG`, `SCREENSTUDIO_FFPROBE`, `SCREENSTUDIO_EDGE_TTS` | Paths to those tools, if they are not found automatically. |
 

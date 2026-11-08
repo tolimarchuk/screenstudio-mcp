@@ -30,7 +30,9 @@ export interface WordEdit {
   remove?: boolean;
 }
 /** "updated": the open editor shows the new transcript. "not-open": no editor has the project. */
-export type EditorSync = "updated" | "not-open";
+export type EditorSync = "updated" | "not-open" | "reopened";
+/** Closes and reopens the project's editor, so it re-reads the project from disk. */
+export type ReopenEditor = () => Promise<unknown>;
 
 const FILLERS = /^(um+|uh+|erm+|ah+|hmm+|mm+)$/i;
 const j = JSON.stringify;
@@ -77,21 +79,35 @@ const staleEditor = (cause: string) =>
  * The model reads `transcriptPromise.data`, which only the bridge's MobxPromise
  * has; the raw tRPC client returns a plain Promise and blanks the captions.
  */
-async function refreshEditor(studio: Studio, projectPath: string): Promise<EditorSync> {
-  const state = await studio
-    .evaluate<EditorSync | "empty">(
+async function refreshEditor(studio: Studio, projectPath: string, reopen?: ReopenEditor): Promise<EditorSync> {
+  let cause: string;
+  try {
+    const state = await studio.evaluate<EditorSync | "empty">(
       `${editorModel(studio, projectPath)}
        if (!m) return 'not-open';
        const q = bridge.query('captions.getTranscript', { projectPath: p.path });
        m.transcriptPromise = q; m.dirtyTranscript = null;
        await q.promise.catch(() => {});
        return m.transcriptData ? 'updated' : 'empty';`,
-    )
-    .catch((e) => {
-      throw staleEditor(firstLine(e));
+    );
+    if (state !== "empty") return state;
+    cause = "it read no transcript back";
+  } catch (e) {
+    cause = firstLine(e);
+  }
+  // Builds after the reference one keep the transcript model elsewhere. Reopening
+  // the editor makes it read the transcript the app just wrote, like Cmd+W then reopen.
+  if (reopen) {
+    const open = await studio
+      .evaluate<boolean>(`return [...(window.$projects ?? [])].some((x) => x.path === ${j(projectPath)});`)
+      .catch(() => false);
+    if (!open) return "not-open";
+    await reopen().catch((e) => {
+      throw staleEditor(`${cause}; reopening the editor failed too: ${firstLine(e)}`);
     });
-  if (state === "empty") throw staleEditor("it read no transcript back");
-  return state;
+    return "reopened";
+  }
+  throw staleEditor(cause);
 }
 
 // Words removed from the captions are still spoken. They are kept here, per
@@ -223,11 +239,12 @@ export async function generateTranscript(
   studio: Studio,
   projectPath: string,
   generator: Record<string, unknown>,
+  reopen?: ReopenEditor,
 ) {
   await studio.requireVersion();
   await studio.call("mutation", "captions.generateAll", { projectPath, generator }, 600000);
   await rm(join(studio.stateDir, removedFile(projectPath)), { force: true });
-  const editor = await refreshEditor(studio, projectPath);
+  const editor = await refreshEditor(studio, projectPath, reopen);
   return { ...(await readTranscript(studio, projectPath)), editor };
 }
 
@@ -262,6 +279,9 @@ export async function editTranscript(
      return { removed: r.removed };`,
     )
     .catch((e) => {
+      // Builds after the reference one keep the transcript model elsewhere: edit the
+      // saved transcript through the app instead, like a project that is not open.
+      if (/dynamically imported module|is not a function/i.test(firstLine(e))) return null;
       throw new Error(
         `The open editor could not take the caption edit (${firstLine(e)}). Supported build: ${APP_BUILD}.`,
       );

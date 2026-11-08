@@ -10,7 +10,7 @@ import {
   readTranscript,
 } from "../../studio/transcript.js";
 
-export function register(server: McpServer, { studio }: Context) {
+export function register(server: McpServer, { studio, editor }: Context) {
   const tool = toolsOn(server);
 
   tool(
@@ -27,10 +27,12 @@ export function register(server: McpServer, { studio }: Context) {
     },
     { ...ONLINE, destructiveHint: true },
     async (a) => {
+      const projectPath = await studio.path(a.projectPath);
       const t = await generateTranscript(
         studio,
-        await studio.path(a.projectPath),
+        projectPath,
         a.generator ? { locale: a.locale, ...a.generator } : { type: "system", locale: a.locale },
+        () => editor.reopen(projectPath),
       );
       return { sessions: t.sessions, words: t.words.length, phrases: phrases(t.words), editor: t.editor };
     },

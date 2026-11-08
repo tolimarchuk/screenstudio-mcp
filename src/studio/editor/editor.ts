@@ -95,6 +95,27 @@ export class Editor {
     return this.state(path);
   }
 
+  /**
+   * Closes the project's editor window and opens it again, so the editor
+   * re-reads the project from disk (captions after a transcript the app wrote
+   * outside the editor). Saves first, so the app never asks about unsaved changes.
+   */
+  async reopen(projectPath: string) {
+    const path = await this.studio.path(projectPath);
+    await this.studio.requireVersion();
+    await this.locked(path, async () => {
+      const open = (await this.list()).some((e) => e.projectPath === path);
+      if (!open) return;
+      await this.saveNow(path);
+      await this.run(`const c = __ss.get(${j(path)}); c.view.targetWindow.close(); return true;`);
+      for (let i = 0; i < 40; i++) {
+        await new Promise((r) => setTimeout(r, 250));
+        if (!(await this.list()).some((e) => e.projectPath === path)) break;
+      }
+    });
+    return this.open(path);
+  }
+
   async raw(projectPath: string) {
     const path = await this.studio.path(projectPath);
     return this.run<any>(`return __ss.summary(__ss.get(${j(path)}));`);
