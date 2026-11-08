@@ -9,7 +9,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { APP_BUILD } from "../studio/compat.js";
+import { APP_BUILD, KNOWN_BUILDS } from "../studio/compat.js";
 import { codexBlock, withoutTable } from "./codex.js";
 import { LEGACY_SKILLS, installSkills, removeSkills, skillNames } from "./skills.js";
 
@@ -179,7 +179,7 @@ async function doctor() {
   try {
     const version = await plist("CFBundleVersion");
     if (!existsSync(appBundle)) throw new Error("missing");
-    if (version === APP_BUILD) ok(`Screen Studio ${version}`);
+    if (KNOWN_BUILDS.includes(version)) ok(`Screen Studio ${version}`);
     else
       warn(
         `Screen Studio ${version}: tested with ${APP_BUILD}. Reading works; recording and editing need SCREENSTUDIO_ALLOW_UNTESTED=1 to try this build.`,

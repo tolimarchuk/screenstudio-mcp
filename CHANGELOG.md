@@ -4,6 +4,19 @@ New releases go at the top.
 
 ## Unreleased
 
+- Screen Studio 4.1.0 (build 5005): the editor is found again. 4.1.0 renamed the editor
+  context's `exportManager` to `exports`, so every open editor was invisible and
+  `screenstudio_editor_open` failed. Both names are accepted now, and 4.1.0-5005 is a
+  known build (no `SCREENSTUDIO_ALLOW_UNTESTED` needed). Verified live on 4.1.0:
+  list, open, state, config apply, preview frame, save.
+- Recording on 4.1.0: the app moved recording out of its bridge (`capture.currentSessionState`,
+  `capture.inputDiscovery`, `capture.start` and `windows.capturableWindows` are gone), so
+  `screenstudio_record_*` and `screenstudio_sources` now fail fast with the reason instead of
+  timing out, and `screenstudio_status` reports `recordingUnavailable` while staying connected.
+- Transcripts on builds after 4.0.1: when the editor cannot reload a transcript the app just
+  wrote (its transcript chunk moved), the editor is saved, closed and reopened instead of
+  failing; the result says `editor: "reopened"`.
+
 - **One skill instead of three.** `screenstudio-record`, `screenstudio-edit` and `screenstudio-deliver` are now one `screenstudio` skill, so agents see a single catalog entry. Its `SKILL.md` lists the tools, the record, edit and deliver flow and the rules for every stage, and routes to a guide per stage (`references/record.md`, `edit.md`, `deliver.md`) and the existing references. The stage guides are also resources (`screenstudio://record`, `screenstudio://edit`, `screenstudio://deliver`), and the prompts paste the skill with the guides they need.
 - **Your own defaults.** Before recording or editing, the skill reads `~/.screenstudio-mcp/preferences.md` (in `SCREENSTUDIO_STATE_DIR` when set) if it exists: editing taste, pacing, narration voice and settings, credit rules. Its preferences override the skill's defaults.
 - **Installer.** `install` and `update` put the skill in Claude Code's skills folder and, for Codex, in `~/.agents/skills` (`$CODEX_HOME/skills` is deprecated). They remove the three old skill folders from Claude Code, `$CODEX_HOME/skills` and `~/.agents/skills`, but only folders the installer made: a copy with its marker, or a symlink to a screenstudio-mcp checkout's own skill folder. `uninstall` removes the new and old folders. `--agents-home` points at a folder other than `~/.agents`; with `--claude-home` or `--codex-home` and no `--agents-home`, the real `~/.agents` is left alone.

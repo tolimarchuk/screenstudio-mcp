@@ -6,7 +6,7 @@ const j = JSON.stringify;
 // one tree, reachable from any editor window the main renderer knows about.
 export const PRELUDE = `
 const __ss = (() => {
-  const isCtx = (o) => o && typeof o === 'object' && 'playback' in o && 'view' in o && 'project' in o && 'exportManager' in o;
+  const isCtx = (o) => o && typeof o === 'object' && 'playback' in o && 'view' in o && 'project' in o && ('exportManager' in o || 'exports' in o);
   const contexts = () => {
     const found = new Set();
     const wins = [window.$$focused?.view?.targetWindow, window.lastActiveWindow].filter(Boolean);

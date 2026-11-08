@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { withSession } from "../cdp/client.js";
-import { APP_BUILD, PROJECT_SCHEMA } from "./compat.js";
+import { APP_BUILD, KNOWN_BUILDS, PROJECT_SCHEMA, RECORDING_BRIDGE_BUILDS, recordingUnavailable } from "./compat.js";
 import { exec, findTool, frameAt, probe } from "./media.js";
 import { assertUuid, statePath } from "./util.js";
 import {
@@ -318,7 +318,7 @@ export class Studio {
    */
   async requireVersion(kind: "read" | "write" = "write") {
     const v = await this.version();
-    if (v === APP_BUILD) return v;
+    if (KNOWN_BUILDS.includes(v)) return v;
     const major4 = typeof v === "string" && v.startsWith("4.");
     if (major4 && (kind === "read" || process.env.SCREENSTUDIO_ALLOW_UNTESTED === "1")) return v;
     throw new Error(
@@ -380,12 +380,23 @@ export class Studio {
     }
     return { quit: false, note: "Screen Studio is still open; it may be asking about unsaved changes." };
   }
+  /** The build, when its main process still serves recording over the bridge. */
+  async requireRecordingBridge(kind: "read" | "write" = "write") {
+    const v = await this.requireVersion(kind);
+    if (!RECORDING_BRIDGE_BUILDS.includes(v)) throw new Error(recordingUnavailable(v));
+    return v;
+  }
+  /** True when recording can be driven on this build; the reason otherwise. */
+  async recordingSupport(): Promise<{ supported: true } | { supported: false; reason: string }> {
+    const v = await this.requireVersion("read");
+    return RECORDING_BRIDGE_BUILDS.includes(v) ? { supported: true } : { supported: false, reason: recordingUnavailable(v) };
+  }
   async state() {
-    await this.requireVersion("read");
+    await this.requireRecordingBridge("read");
     return this.subscription("capture.currentSessionState");
   }
   async sources() {
-    await this.requireVersion("read");
+    await this.requireRecordingBridge("read");
     return {
       devices: await this.subscription("capture.inputDiscovery"),
       windows: await this.call("query", "windows.capturableWindows"),

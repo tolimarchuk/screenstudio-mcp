@@ -1,7 +1,17 @@
 // Everything tied to one Screen Studio build. A new app version starts here.
 
 export const APP_BUILD = "4.0.1-4897";
+/** Builds this adapter has been exercised against; the first is the reference build. */
+export const KNOWN_BUILDS = [APP_BUILD, "4.1.0-5005"];
 export const PROJECT_SCHEMA = "4.0.0";
+/**
+ * Builds whose main process still serves recording over the bridge
+ * (capture.currentSessionState, capture.inputDiscovery, capture.start, windows.capturableWindows).
+ * 4.1.0 moved recording into the renderer's own stores, so those routes are gone there.
+ */
+export const RECORDING_BRIDGE_BUILDS = [APP_BUILD];
+export const recordingUnavailable = (version: string) =>
+  `Screen Studio ${version} moved recording out of the app's bridge, so this adapter cannot start, inspect or control a recording on this build yet. Record in Screen Studio as usual; editing, analysis, transcripts and exports of the result work.`;
 
 /** Bundle chunk holding the editor's transcript model, and its minified export. */
 export const TRANSCRIPT_CHUNK = "RS8E8hrv2.js";
