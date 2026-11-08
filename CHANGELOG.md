@@ -10,9 +10,19 @@ New releases go at the top.
   known build (no `SCREENSTUDIO_ALLOW_UNTESTED` needed). Verified live on 4.1.0:
   list, open, state, config apply, preview frame, save.
 - Recording on 4.1.0: the app moved recording out of its bridge (`capture.currentSessionState`,
-  `capture.inputDiscovery`, `capture.start` and `windows.capturableWindows` are gone), so
-  `screenstudio_record_*` and `screenstudio_sources` now fail fast with the reason instead of
-  timing out, and `screenstudio_status` reports `recordingUnavailable` while staying connected.
+  `capture.inputDiscovery`, `capture.start` and `windows.capturableWindows` are gone) into
+  renderer modules. The adapter now loads those modules by URL inside the renderer (ES modules
+  are singletons, so the import returns the live instances) and drives the app's own recording
+  controller: `screenstudio_sources` lists displays (the `displays.allDisplays` subscription),
+  capturable windows (the native client) and the app's microphone and camera lists;
+  `screenstudio_record_start` builds the same config the app's picker builds and calls
+  `startRecording`; `screenstudio_record_state` reads the live session (its `phase` is also
+  exposed as `type`); pause, resume, marker, restart, cancel and finish call the controller's
+  methods, and finish returns the saved project. The module table lives in `compat.ts`
+  (`RECORDING_MODULES`, per build), so the next build only needs new chunk names. On a build
+  with neither the bridge routes nor a module table, the recording tools fail fast with the
+  reason and `screenstudio_status` reports `recordingUnavailable`. Verified live on 4.1.0:
+  sources, start on a window, state, pause, resume, finish, and the project opened in the editor.
 - Transcripts on builds after 4.0.1: when the editor cannot reload a transcript the app just
   wrote (its transcript chunk moved), the editor is saved, closed and reopened instead of
   failing; the result says `editor: "reopened"`.

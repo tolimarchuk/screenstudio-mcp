@@ -107,11 +107,11 @@ Every edit is custom. A preset is an optional starting point: name one in your r
 
 ## Compatibility
 
-Supported: Screen Studio 4.0.1 (build 4897, the reference build) and 4.1.0 (build 5005) on macOS. Reading projects and footage works on any 4.x build. On 4.1.0, editing, previews, transcripts and exports work; recording is not driven by this adapter yet, because 4.1.0 moved recording out of the app's bridge (`screenstudio_status` reports `recordingUnavailable`). Recording and editing on any other build, older or newer, needs `SCREENSTUDIO_ALLOW_UNTESTED=1`.
+Supported: Screen Studio 4.0.1 (build 4897, the reference build) and 4.1.0 (build 5005) on macOS. Reading projects and footage works on any 4.x build. Recording, editing, previews, transcripts and exports work on both known builds; 4.1.0 records through the app's renderer modules instead of its bridge, and a build with neither makes the recording tools fail fast (`screenstudio_status` reports `recordingUnavailable`). Recording and editing on any other build, older or newer, needs `SCREENSTUDIO_ALLOW_UNTESTED=1`.
 
 ## Requirements
 
-- macOS with [Screen Studio](https://screen.studio) 4. Editing works on 4.0.1 and 4.1.0; recording through the adapter needs 4.0.1; see [Compatibility](#compatibility).
+- macOS with [Screen Studio](https://screen.studio) 4. Recording and editing work on 4.0.1 and 4.1.0; see [Compatibility](#compatibility).
 - Node.js 22 or newer.
 - `ffmpeg` and `ffprobe`: `brew install ffmpeg`.
 - Optional, for narration: `edge-tts` (`pipx install edge-tts`). Narration text is sent to Microsoft's online speech service.

@@ -11,7 +11,29 @@ export const PROJECT_SCHEMA = "4.0.0";
  */
 export const RECORDING_BRIDGE_BUILDS = [APP_BUILD];
 export const recordingUnavailable = (version: string) =>
-  `Screen Studio ${version} moved recording out of the app's bridge, so this adapter cannot start, inspect or control a recording on this build yet. Record in Screen Studio as usual; editing, analysis, transcripts and exports of the result work.`;
+  `Screen Studio ${version} keeps recording in renderer modules this adapter does not know yet, so it cannot start, inspect or control a recording on this build. Record in Screen Studio as usual; editing, analysis, transcripts and exports of the result work.`;
+
+/** One module inside the app bundle: its chunk file under dist/ and the minified export name. */
+export type ModuleRef = { chunk: string; exportName: string };
+/**
+ * Builds that record through renderer modules. The controller drives one recording
+ * (start, pause, resume, marker, restart, cancel, finish); the native client lists
+ * capturable windows and holds the live session; settings and devices feed the config.
+ */
+export type RecordingModules = {
+  controller: ModuleRef;
+  native: ModuleRef;
+  settings: ModuleRef;
+  devices: ModuleRef;
+};
+export const RECORDING_MODULES: Record<string, RecordingModules> = {
+  "4.1.0-5005": {
+    controller: { chunk: "26mpnmSu2.js", exportName: "g" },
+    native: { chunk: "DLnk-cLt.js", exportName: "t" },
+    settings: { chunk: "CF0eKRBO.js", exportName: "t" },
+    devices: { chunk: "CVCogM-Y2.js", exportName: "t" },
+  },
+};
 
 /** Bundle chunk holding the editor's transcript model, and its minified export. */
 export const TRANSCRIPT_CHUNK = "RS8E8hrv2.js";

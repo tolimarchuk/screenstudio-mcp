@@ -1,6 +1,25 @@
 import { existsSync } from "node:fs";
 import { withSession } from "../cdp/client.js";
-import { APP_BUILD, KNOWN_BUILDS, PROJECT_SCHEMA, RECORDING_BRIDGE_BUILDS, recordingUnavailable } from "./compat.js";
+import {
+  APP_BUILD,
+  KNOWN_BUILDS,
+  PROJECT_SCHEMA,
+  RECORDING_BRIDGE_BUILDS,
+  RECORDING_MODULES,
+  recordingUnavailable,
+  type RecordingModules,
+} from "./compat.js";
+import {
+  displaysSnippet,
+  loadModulesSnippet,
+  recordingConfig,
+  sessionState,
+  sourcesFromModules,
+  type CapturableWindow,
+  type Display,
+  type RecordingSettings,
+  type StartInput,
+} from "./recording-modules.js";
 import { exec, findTool, frameAt, probe } from "./media.js";
 import { assertUuid, statePath } from "./util.js";
 import {
@@ -218,6 +237,11 @@ type ExportJob = {
 };
 const RUNNING = [undefined, "starting", "rendering"];
 
+/** The recording controller's method for each adapter action; names are the app's own. */
+export function controllerMethod(action: "pause" | "resume" | "finish" | "addMarker" | "restart" | "cancel") {
+  return action === "addMarker" ? "addMarker" : `${action}Recording`;
+}
+
 export class Studio {
   readonly appPath = resolve(
     process.env.SCREENSTUDIO_APP_PATH ??
@@ -380,50 +404,68 @@ export class Studio {
     }
     return { quit: false, note: "Screen Studio is still open; it may be asking about unsaved changes." };
   }
-  /** The build, when its main process still serves recording over the bridge. */
-  async requireRecordingBridge(kind: "read" | "write" = "write") {
+  /**
+   * How this build records: "bridge" when the main process serves capture routes (4.0.1),
+   * or the renderer modules that took over (4.1.0 and later). Throws for a build with neither.
+   */
+  async recordingPath(kind: "read" | "write" = "write"): Promise<"bridge" | RecordingModules> {
     const v = await this.requireVersion(kind);
-    if (!RECORDING_BRIDGE_BUILDS.includes(v)) throw new Error(recordingUnavailable(v));
-    return v;
+    if (RECORDING_BRIDGE_BUILDS.includes(v)) return "bridge";
+    const modules = RECORDING_MODULES[v];
+    if (!modules) throw new Error(recordingUnavailable(v));
+    return modules;
   }
   /** True when recording can be driven on this build; the reason otherwise. */
   async recordingSupport(): Promise<{ supported: true } | { supported: false; reason: string }> {
-    const v = await this.requireVersion("read");
-    return RECORDING_BRIDGE_BUILDS.includes(v) ? { supported: true } : { supported: false, reason: recordingUnavailable(v) };
+    try {
+      await this.recordingPath("read");
+      return { supported: true };
+    } catch (e) {
+      return { supported: false, reason: e instanceof Error ? e.message : String(e) };
+    }
+  }
+  /** Runs renderer code with the app's recording modules loaded as `controller`, `native`, `settings`, `devices`. */
+  private withModules<T = any>(modules: RecordingModules, body: string, timeout = 30000) {
+    return this.evaluate<T>(`${loadModulesSnippet(this.appPath, modules)}\n${body}`, timeout);
   }
   async state() {
-    await this.requireRecordingBridge("read");
-    return this.subscription("capture.currentSessionState");
+    const path = await this.recordingPath("read");
+    if (path === "bridge") return this.subscription("capture.currentSessionState");
+    const session = await this.withModules(path, "return controller.currentSession ?? null;");
+    return sessionState(session);
   }
   async sources() {
-    await this.requireRecordingBridge("read");
-    return {
-      devices: await this.subscription("capture.inputDiscovery"),
-      windows: await this.call("query", "windows.capturableWindows"),
-    };
+    const path = await this.recordingPath("read");
+    if (path === "bridge")
+      return {
+        devices: await this.subscription("capture.inputDiscovery"),
+        windows: await this.call("query", "windows.capturableWindows"),
+      };
+    const raw = await this.withModules(
+      path,
+      `${displaysSnippet}
+await devices.waitForReady?.();
+return {
+  displays,
+  windows: await native.windows.listCapturableWindows(),
+  microphones: devices.audioDevices ?? [],
+  cameras: devices.cameraDevices ?? [],
+};`,
+    );
+    return sourcesFromModules(raw);
   }
-  async start(input: {
-    windowId?: number;
-    displayId?: number;
-    area?: { x: number; y: number; width: number; height: number };
-    name: string;
-    microphoneDeviceId?: string;
-    cameraDeviceId?: string;
-    systemAudio?: boolean;
-  }) {
+  async start(input: StartInput) {
     return this.lock(async () => {
-      await this.requireVersion();
+      const path = await this.recordingPath();
       if (await this.state()) throw new Error("A recording is already active. Inspect it before continuing.");
       if ((input.windowId === undefined) === (input.displayId === undefined))
         throw new Error("Select exactly one window or display.");
       const sources = await this.sources();
       if (input.windowId !== undefined && !sources.windows.some((w: any) => w.id === input.windowId))
         throw new Error("Recording window is no longer available.");
-      if (
-        input.displayId !== undefined &&
-        !sources.devices.displays.some((d: any) => d.displayID === input.displayId)
-      )
-        throw new Error("Display is no longer available.");
+      const display = sources.devices.displays.find((d: any) => d.displayID === input.displayId);
+      if (input.displayId !== undefined && !display) throw new Error("Display is no longer available.");
+      if (path !== "bridge") return this.startThroughModules(path, input, display);
       const config = {
         windowId: input.windowId ?? null,
         displayId: input.displayId ?? null,
@@ -440,9 +482,42 @@ export class Studio {
       return { started, state: await this.state() };
     });
   }
+  /**
+   * Starts through the renderer's recording controller, the way the app's own picker does:
+   * read the window as it is right now, build the picker's config, bring the window forward,
+   * then let the controller prepare the recording and start the native recorder.
+   */
+  private async startThroughModules(modules: RecordingModules, input: StartInput, display?: Display) {
+    const live = await this.withModules<{ window: CapturableWindow | null; settings: RecordingSettings }>(
+      modules,
+      `const window = ${input.windowId === undefined ? "null" : `await native.windows.getCapturableWindow(${j(input.windowId)})`};
+return {
+  window,
+  settings: {
+    maximumWebcamHeight: settings.maximumWebcamHeight,
+    recordingUseScreenCaptureKit: settings.recordingUseScreenCaptureKit,
+    hideDesktopContentWhileRecording: settings.hideDesktopContentWhileRecording,
+  },
+};`,
+    );
+    if (input.windowId !== undefined && !live.window)
+      throw new Error("Recording window is no longer available.");
+    const config = recordingConfig(input, { window: live.window ?? undefined, display }, live.settings);
+    await this.withModules(
+      modules,
+      `${live.window ? `await native.windows.bringWindowToFront(${j(live.window.id)}).catch(() => {});` : ""}
+if (!controller.canStartRecording) throw new Error("Screen Studio is busy with another recording operation.");
+await controller.startRecording(${j(config)});`,
+      60000,
+    );
+    const state = await this.state();
+    if (!state)
+      throw new Error("Screen Studio did not start the recording; check its permissions and the app window.");
+    return { started: true, state };
+  }
   async recordingAction(action: "pause" | "resume" | "finish" | "addMarker" | "restart" | "cancel") {
     return this.lock(async () => {
-      await this.requireVersion();
+      const path = await this.recordingPath();
       const state = await this.state();
       if (!state) throw new Error("No recording is active.");
       const type = state.type ?? state.recordingState?.type;
@@ -450,7 +525,10 @@ export class Studio {
         throw new Error("Recording must be running before pausing.");
       if (action === "resume" && type !== "paused")
         throw new Error("Recording must be paused before resuming.");
-      const result = await this.call("mutation", `capture.${action}`, undefined, 120000);
+      const result =
+        path === "bridge"
+          ? await this.call("mutation", `capture.${action}`, undefined, 120000)
+          : await this.withModules(path, `return await controller.${controllerMethod(action)}();`, 180000);
       if (action === "finish") {
         if (result?.type !== "success" || !result.projectPath)
           throw new Error(`Recording did not produce a project: ${j(result)}`);
